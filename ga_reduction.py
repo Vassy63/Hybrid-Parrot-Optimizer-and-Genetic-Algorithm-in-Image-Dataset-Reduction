@@ -173,7 +173,7 @@ def plot_all_results(history, train_features, train_labels, best_solution, class
     best_fits = [h['best_fitness'] for h in history]
     mean_fits = [h['mean_fitness'] for h in history]
     
-    f_com = [h['f_compression'] * 100 for h in history]
+    f_com = [h['f_compression'] for h in history]
     f_cov = [h['f_coverage'] for h in history]
     f_div = [h['f_diversity'] for h in history]
     f_bal = [h['f_balance'] for h in history]
@@ -190,7 +190,7 @@ def plot_all_results(history, train_features, train_labels, best_solution, class
     axes[0].legend(fontsize=10)
 
     # Đồ thị 2: 4 Hàm mục tiêu thành phần
-    axes[1].plot(gens, f_com, label='F_Com (% Nén)', color='#2ca02c', linewidth=2)
+    axes[1].plot(gens, f_com, label='F_Com (Độ nén)', color='#2ca02c', linewidth=2)
     axes[1].plot(gens, f_cov, label='F_Cov (Bao phủ)', color='#d62728', linewidth=1.8)
     axes[1].plot(gens, f_div, label='F_Div (Đa dạng)', color='#9467bd', linewidth=1.8)
     axes[1].plot(gens, f_bal, label='F_Bal (Cân bằng)', color='#bcbd22', linewidth=1.8)
