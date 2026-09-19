@@ -1,0 +1,19 @@
+# Dataset folders
+seg_train/
+seg_pred/
+seg_test/
+*.zip
+
+# PyTorch & Features (Too heavy for Git)
+outputs/features/*.npy
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# IDEs
+.idea/
+.vscode/
+*.swp

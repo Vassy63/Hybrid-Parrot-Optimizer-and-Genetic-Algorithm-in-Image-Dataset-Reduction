@@ -1,0 +1,5 @@
+model,acc_full,acc_subset,acc_diff,f1_full,f1_subset,train_time_full_sec,train_time_subset_sec,speedup_ratio
+SVM,85.57,87.6,2.03,85.5,87.51,6.35,0.86,7.36
+KNN,90.8,89.4,-1.4,90.8,89.39,0.01,0.01,1.21
+RF,89.77,89.47,-0.3,89.72,89.41,2.35,0.81,2.91
+MLP,90.53,90.37,-0.17,90.51,90.35,18.17,5.87,3.09

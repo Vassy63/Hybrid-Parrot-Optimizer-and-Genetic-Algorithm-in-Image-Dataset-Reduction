@@ -1,0 +1,73 @@
+{
+    "run_id": "run_ga_20260919_142308",
+    "timestamp": "20260919_142308",
+    "total_time_seconds": 560.03,
+    "command_args": {
+        "generations": 50,
+        "pop_size": 20,
+        "crossover_rate": 0.8,
+        "mutation_rate_max": 0.03,
+        "mutation_rate_min": 0.001,
+        "tournament_size": 4,
+        "elitism_count": 3,
+        "init_ratio": 0.3,
+        "patience": 15,
+        "seed": 42,
+        "mini_test": null,
+        "run_name": null,
+        "skip_eval": false
+    },
+    "results_summary": {
+        "original_samples": 14034,
+        "reduced_samples": 5710,
+        "compression_ratio_percent": 59.31,
+        "best_fitness": 0.7602,
+        "total_generations_run": 50
+    },
+    "classification_summary": [
+        {
+            "model": "SVM",
+            "acc_full": 85.57,
+            "acc_subset": 87.6,
+            "acc_diff": 2.03,
+            "f1_full": 85.5,
+            "f1_subset": 87.51,
+            "train_time_full_sec": 6.35,
+            "train_time_subset_sec": 0.86,
+            "speedup_ratio": 7.36
+        },
+        {
+            "model": "KNN",
+            "acc_full": 90.8,
+            "acc_subset": 89.4,
+            "acc_diff": -1.4,
+            "f1_full": 90.8,
+            "f1_subset": 89.39,
+            "train_time_full_sec": 0.01,
+            "train_time_subset_sec": 0.01,
+            "speedup_ratio": 1.21
+        },
+        {
+            "model": "RF",
+            "acc_full": 89.77,
+            "acc_subset": 89.47,
+            "acc_diff": -0.3,
+            "f1_full": 89.72,
+            "f1_subset": 89.41,
+            "train_time_full_sec": 2.35,
+            "train_time_subset_sec": 0.81,
+            "speedup_ratio": 2.91
+        },
+        {
+            "model": "MLP",
+            "acc_full": 90.53,
+            "acc_subset": 90.37,
+            "acc_diff": -0.17,
+            "f1_full": 90.51,
+            "f1_subset": 90.35,
+            "train_time_full_sec": 18.17,
+            "train_time_subset_sec": 5.87,
+            "speedup_ratio": 3.09
+        }
+    ]
+}
