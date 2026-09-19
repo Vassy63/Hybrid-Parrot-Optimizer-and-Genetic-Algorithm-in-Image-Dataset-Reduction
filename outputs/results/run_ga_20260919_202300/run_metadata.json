@@ -1,0 +1,27 @@
+{
+    "run_id": "run_ga_20260919_202300",
+    "timestamp": "20260919_202300",
+    "total_time_seconds": 1441.3,
+    "command_args": {
+        "generations": 50,
+        "pop_size": 20,
+        "crossover_rate": 0.8,
+        "mutation_rate_max": 0.03,
+        "mutation_rate_min": 0.001,
+        "tournament_size": 4,
+        "elitism_count": 3,
+        "init_ratio": 0.3,
+        "patience": 15,
+        "seed": 42,
+        "mini_test": null,
+        "run_name": null,
+        "skip_eval": false
+    },
+    "results_summary": {
+        "original_samples": 14034,
+        "reduced_samples": 5782,
+        "compression_ratio_percent": 58.8,
+        "best_fitness": 0.759,
+        "total_generations_run": 50
+    }
+}

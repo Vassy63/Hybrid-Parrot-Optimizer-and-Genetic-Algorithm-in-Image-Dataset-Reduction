@@ -18,21 +18,18 @@ def compute_raw_fitness(ind, dist_matrix, labels, num_classes, dist_max=1.0):
     if M == 1:
         div = 0.0
     else:
-        # Tối ưu siêu tốc: X.T @ dist_matrix @ X = tổng khoảng cách giữa mọi cặp X_i = 1 và X_j = 1
-        # Tránh việc cắt ma trận con tốn RAM
+        # Tối ưu siêu tốc: X.T @ dist_matrix @ X
         ind_float = ind.astype(np.float32)
         total_dist_sum = np.dot(ind_float, np.dot(dist_matrix, ind_float))
-        # total_dist_sum là tổng của cả ma trận (kể cả đường chéo = 0, và bị gấp đôi do tính đối xứng)
-        # Tổng tam giác trên = total_dist_sum / 2
         sum_dist_upper = total_dist_sum / 2.0
-        div = (1.0 / (M * (M - 1))) * (sum_dist_upper / dist_max)
+        # Cập nhật: Thêm hệ số 2 theo công thức mới
+        div = (2.0 / (M * (M - 1))) * (sum_dist_upper / dist_max)
         
     # 3. Coverage (Cov)
-    # Rút trích trực tiếp nhanh hơn, tránh copy liên tục nếu bộ nhớ hạn hẹp
-    # numpy advanced indexing
     selected_idx = np.where(ind == 1)[0]
     min_dists = np.min(dist_matrix[:, selected_idx], axis=1)
-    cov = 1.0 - np.mean(min_dists)
+    # Cập nhật: Thêm / dist_max theo công thức mới
+    cov = 1.0 - np.mean(min_dists / dist_max)
     
     # 4. Class Balance (Bal)
     sum_sq_diff = 0
