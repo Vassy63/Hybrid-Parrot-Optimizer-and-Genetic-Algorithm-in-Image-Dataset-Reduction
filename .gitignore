@@ -1,0 +1,14 @@
+# Ignore raw image datasets and training outputs
+data/seg_train/
+data/seg_test/
+data/seg_pred/
+outputs/
+graphify-out/
+__pycache__/
+*.pyc
+*.pth
+KhoaLuanDatasetReduction_Kaggle.zip
+
+# Keep pre-extracted 512-d ResNet-18 features (~21MB) so Kaggle/GitHub skips feature extraction
+!features/
+!features/*.npy
