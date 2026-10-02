@@ -42,39 +42,41 @@ class ParrotOptimizer:
 
     def generate_candidates(self, population, gbest_pos, t, T_max):
         mean_pos = np.mean(population, axis=0)
+        v = mean_pos - np.mean(mean_pos)
         candidates = []
         pop_size = len(population)
         
         for i in range(pop_size):
             x_current = population[i].copy()
             St = np.random.randint(1, 5)
+            alpha = np.random.rand() / 5
+            flock_vec = 0.22 * (x_current - mean_pos) + 0.85 * v
             
             if St == 1:
                 levy = self.levy_flight(self.N)
                 rand_val = np.random.rand()
-                term2 = rand_val * mean_pos * ((1 - t / T_max) ** (2 * t / T_max))
-                x_new_continuous = (x_current - gbest_pos) * levy + term2
+                term2 = rand_val * flock_vec * ((1 - t / T_max) ** (2 * t / T_max))
+                x_new_continuous = x_current + alpha * (x_current - gbest_pos) * levy + term2
             elif St == 2:
                 levy = self.levy_flight(self.N)
-                randn_val = np.random.randn()
-                term2 = randn_val * (1 - t / T_max) * np.ones(self.N)
-                x_new_continuous = x_current + gbest_pos * levy + term2
+                randn_val = abs(np.random.randn())
+                term2 = alpha * randn_val * (1 - t / T_max) * flock_vec
+                x_new_continuous = x_current + alpha * (x_current - gbest_pos) * levy + term2
             elif St == 3:
-                alpha = np.random.rand() / 5
                 H = np.random.rand()
                 if H < 0.5:
-                    x_new_continuous = x_current + alpha * (1 - t / T_max) * (x_current - mean_pos)
+                    x_new_continuous = x_current + alpha * (1 - t / T_max) * flock_vec
                 else:
                     j = np.random.randint(1, pop_size + 1)
                     rand_val = max(np.random.rand(), 1e-8)
                     term2 = np.exp(-j / (rand_val * T_max))
-                    x_new_continuous = x_current + alpha * (1 - t / T_max) * term2
+                    x_new_continuous = x_current + alpha * (1 - t / T_max) * term2 * flock_vec
             else:
                 rand_val = np.random.rand()
                 theta = np.random.rand() * np.pi
                 term1 = rand_val * np.cos(np.pi * t / (2 * T_max)) * (gbest_pos - x_current)
                 term2 = np.cos(theta) * ((t / T_max) ** (2 / T_max)) * (x_current - gbest_pos)
-                x_new_continuous = x_current + term1 - term2
+                x_new_continuous = x_current + alpha * (term1 - term2)
             
             x_new_binary = self.binarize(x_current, x_new_continuous)
             candidates.append(x_new_binary)
@@ -89,8 +91,7 @@ class ParrotOptimizer:
         if initial_fitness is not None:
             fitness_scores = initial_fitness.copy()
         else:
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                fitness_scores = np.array(list(executor.map(self.evaluate, population)))
+            fitness_scores = np.array([self.evaluate(ind) for ind in population])
         
         best_idx = np.argmax(fitness_scores)
         gbest_pos = population[best_idx].copy()
@@ -102,9 +103,7 @@ class ParrotOptimizer:
         for step in tqdm(range(1, n_steps + 1), desc="PO Iterations", leave=False):
             t = min(T_max, start_iter + step)
             candidates = self.generate_candidates(population, gbest_pos, t, T_max)
-                
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                new_fitness_scores = list(executor.map(self.evaluate, candidates))
+            new_fitness_scores = [self.evaluate(ind) for ind in candidates]
                 
             for i in range(len(population)):
                 if new_fitness_scores[i] > fitness_scores[i]:

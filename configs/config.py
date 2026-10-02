@@ -23,8 +23,8 @@ class GAConfig:
     population_size: int = 20
     generations: int = 100
     crossover_rate: float = 0.8
-    mutation_rate_max: float = 0.03
-    mutation_rate_min: float = 0.001
+    mutation_rate_max: float = 0.0010
+    mutation_rate_min: float = 0.0002
     tournament_size: int = 4
     elitism_count: int = 5
     init_ratio: float = 0.30
@@ -39,10 +39,10 @@ class POConfig:
 
 @dataclass
 class FitnessConfig:
-    w_div: float = 0.10
-    w_cov: float = 0.30
+    w_div: float = 0.15
+    w_cov: float = 0.45
     w_bal: float = 0.20
-    w_com: float = 0.40
+    w_com: float = 0.20
 
 @dataclass
 class POGAConfig:

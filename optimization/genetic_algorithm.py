@@ -20,16 +20,10 @@ class GeneticAlgorithm:
         return np.array([self._repair(ind) for ind in raw_pop])
         
     def evaluate_population(self, population):
-        def eval_ind(ind):
-            return fitness(
-                ind, self.dist_matrix, self.labels, 
-                self.num_classes, self.fitness_config
-            )
-            
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            fitness_scores = list(executor.map(eval_ind, population))
-            
-        return np.array(fitness_scores)
+        return np.array([
+            fitness(ind, self.dist_matrix, self.labels, self.num_classes, self.fitness_config)
+            for ind in population
+        ])
         
     def tournament_selection(self, population, fitness_scores):
         selected_indices = np.random.choice(
@@ -54,7 +48,9 @@ class GeneticAlgorithm:
         t_gens = max(1, total_gens if total_gens is not None else self.config.generations)
         p_mut = max(p_min, p_max - (p_max - p_min) * (current_gen / t_gens))
         
-        mask = (np.random.rand(self.N) < p_mut).astype(int)
+        r = float(np.mean(individual))
+        prob = p_mut * np.where(individual == 1, 1.0 - r, r)
+        mask = (np.random.rand(self.N) < prob).astype(int)
         individual = np.where(mask, 1 - individual, individual)
         return self._repair(individual)
         

@@ -355,7 +355,7 @@ def main():
 
     # 4. Chạy các Baseline lấy mẫu ngẫu nhiên (B1: Random Selection, B2: Stratified Random)
     if run_baselines:
-        target_m = int(np.mean(subset_sizes)) if subset_sizes else int(round(N * poga_cfg.ga.init_ratio))
+        target_m = int(np.median(subset_sizes)) if subset_sizes else int(round(N * poga_cfg.ga.init_ratio))
         b_map = {}
         if args.method in ("all", "random"):
             b_map["Random Selection (B1)"] = ("random", lambda s: random_selection(N, target_m, seed=s))

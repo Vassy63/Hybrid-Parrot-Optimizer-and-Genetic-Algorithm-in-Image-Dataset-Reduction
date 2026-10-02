@@ -70,8 +70,8 @@ def run_s3_block_ga_po(config, dist_matrix, labels, num_classes, initial_populat
     total_iters = config.total_iterations
     ga_steps = int(total_iters * getattr(config, 'split_ratio', 0.5))
     po_steps = total_iters - ga_steps
-    pop, fits, ga_h = ga.run(pop, fits, steps=ga_steps, start_gen=0, total_gens=total_iters, disable_early_stop=True)
-    best_pos, best_fit, po_h = po.run(pop, fits, steps=po_steps, start_iter=ga_steps, total_iters=total_iters, disable_early_stop=True)
+    pop, fits, ga_h = ga.run(pop, fits, steps=ga_steps, start_gen=0, total_gens=ga_steps, disable_early_stop=True)
+    best_pos, best_fit, po_h = po.run(pop, fits, steps=po_steps, start_iter=0, total_iters=po_steps, disable_early_stop=True)
     print(f"Hoàn thành S3 | Best Fitness: {best_fit:.4f}")
     return best_pos, float(best_fit), ga_h + po_h
 
@@ -82,8 +82,8 @@ def run_s4_block_po_ga(config, dist_matrix, labels, num_classes, initial_populat
     total_iters = config.total_iterations
     po_steps = int(total_iters * (1.0 - getattr(config, 'split_ratio', 0.5)))
     ga_steps = total_iters - po_steps
-    _, _, po_h = po.run(pop, fits, steps=po_steps, start_iter=0, total_iters=total_iters, disable_early_stop=True)
-    pop, fits, ga_h = ga.run(po.population, po.fitness_scores, steps=ga_steps, start_gen=po_steps, total_gens=total_iters, disable_early_stop=True)
+    _, _, po_h = po.run(pop, fits, steps=po_steps, start_iter=0, total_iters=po_steps, disable_early_stop=True)
+    pop, fits, ga_h = ga.run(po.population, po.fitness_scores, steps=ga_steps, start_gen=0, total_gens=ga_steps, disable_early_stop=True)
     print(f"Hoàn thành S4 | Best Fitness: {fits[0]:.4f}")
     return pop[0].copy(), float(fits[0]), po_h + ga_h
 
@@ -92,21 +92,25 @@ def run_s4_block_po_ga(config, dist_matrix, labels, num_classes, initial_populat
 # =====================================================================
 
 def run_p1_parallel_merge(config, dist_matrix, labels, num_classes, initial_population=None, initial_fitness=None):
-    """P1: Independent Parallel (GA 50% || PO 50%) -> Merge -> Selection"""
+    """P1: Independent Parallel (GA || PO) -> Merge -> Co-Refinement"""
     print("--- [P1] Parallel Hybrid: Independent GA(50%) || PO(50%) -> Merge ---")
     ga, po, pop, fits = _init_population(config, dist_matrix, labels, num_classes, initial_population, initial_fitness)
     total_iters = config.total_iterations
-    half_steps = max(1, total_iters // 2)
+    par_steps = max(1, int(total_iters * 0.25))
+    ref_steps = max(1, (total_iters - 2 * par_steps) // 2)
 
-    pop_ga, fits_ga, h_ga = ga.run(pop.copy(), fits.copy(), steps=half_steps, start_gen=0, total_gens=half_steps, disable_early_stop=True)
-    _, _, h_po = po.run(pop.copy(), fits.copy(), steps=half_steps, start_iter=0, total_iters=half_steps, disable_early_stop=True)
+    pop_ga, fits_ga, h_ga = ga.run(pop.copy(), fits.copy(), steps=par_steps, start_gen=0, total_gens=par_steps, disable_early_stop=True)
+    _, _, h_po = po.run(pop.copy(), fits.copy(), steps=par_steps, start_iter=0, total_iters=par_steps, disable_early_stop=True)
     pop_po, fits_po = po.population, po.fitness_scores
 
     merged_pop = np.vstack([pop_ga, pop_po])
     merged_fits = np.concatenate([fits_ga, fits_po])
     sorted_idx = np.argsort(merged_fits)[::-1][:len(pop)]
-    final_pop = merged_pop[sorted_idx]
-    final_fits = merged_fits[sorted_idx]
+    final_pop = merged_pop[sorted_idx].copy()
+    final_fits = merged_fits[sorted_idx].copy()
+
+    final_pop, final_fits, h_ref_ga = ga.run(final_pop, final_fits, steps=ref_steps, start_gen=0, total_gens=ref_steps, disable_early_stop=True)
+    best_pos, best_fit, h_ref_po = po.run(final_pop, final_fits, steps=ref_steps, start_iter=0, total_iters=ref_steps, disable_early_stop=True)
 
     history = []
     n_steps = min(len(h_ga), len(h_po))
@@ -114,12 +118,14 @@ def run_p1_parallel_merge(config, dist_matrix, labels, num_classes, initial_popu
         best_entry = h_ga[i] if h_ga[i]['total'] >= h_po[i]['total'] else h_po[i]
         history.append(best_entry)
         history.append(best_entry)
+    history.extend(h_ref_ga)
+    history.extend(h_ref_po)
     while len(history) < total_iters and history:
         history.append(history[-1])
     history = history[:total_iters]
 
-    print(f"Hoàn thành P1 | Best Fitness sau Merge: {final_fits[0]:.4f}")
-    return final_pop[0].copy(), float(final_fits[0]), history
+    print(f"Hoàn thành P1 | Best Fitness sau Merge: {best_fit:.4f}")
+    return best_pos.copy(), float(best_fit), history
 
 # =====================================================================
 # 3. COOPERATIVE HYBRID (C1: Bidirectional Elite Exchange)
@@ -132,7 +138,6 @@ def run_c1_cooperative_exchange(config, dist_matrix, labels, num_classes, initia
     total_iters = config.total_iterations
     half_steps = max(1, total_iters // 2)
     interval = max(1, getattr(config, 'phase_size', 10) // 2)
-    k = min(getattr(config, 'exchange_k', 3), len(pop) // 2)
 
     pop_ga, fits_ga = pop.copy(), fits.copy()
     pop_po, fits_po = pop.copy(), fits.copy()
@@ -151,27 +156,18 @@ def run_c1_cooperative_exchange(config, dist_matrix, labels, num_classes, initia
             history.append(best_entry)
 
         # Bidirectional Elite Exchange có kiểm soát trùng lặp (Duplicate Control)
-        if k > 0:
-            elites_ga, efits_ga = pop_ga[:k].copy(), fits_ga[:k].copy()
-            elites_po, efits_po = pop_po[:k].copy(), fits_po[:k].copy()
-
-            replace_pos = len(pop_ga) - 1
-            for e_ind, e_fit in zip(elites_po, efits_po):
-                if replace_pos >= k and not np.any(np.all(pop_ga == e_ind, axis=1)):
-                    if e_fit > fits_ga[replace_pos]:
-                        pop_ga[replace_pos], fits_ga[replace_pos] = e_ind, e_fit
-                        replace_pos -= 1
-            idx_ga = np.argsort(fits_ga)[::-1]
-            pop_ga, fits_ga = pop_ga[idx_ga], fits_ga[idx_ga]
-
-            replace_pos = len(pop_po) - 1
-            for e_ind, e_fit in zip(elites_ga, efits_ga):
-                if replace_pos >= k and not np.any(np.all(pop_po == e_ind, axis=1)):
-                    if e_fit > fits_po[replace_pos]:
-                        pop_po[replace_pos], fits_po[replace_pos] = e_ind, e_fit
-                        replace_pos -= 1
-            idx_po = np.argsort(fits_po)[::-1]
-            pop_po, fits_po = pop_po[idx_po], fits_po[idx_po]
+        merged_pop = np.vstack([pop_ga, pop_po])
+        merged_fits = np.concatenate([fits_ga, fits_po])
+        unique_pop, unique_idx = np.unique(merged_pop, axis=0, return_index=True)
+        unique_fits = merged_fits[unique_idx]
+        s_idx = np.argsort(unique_fits)[::-1]
+        top_pop = unique_pop[s_idx[:len(pop)]].copy()
+        top_fits = unique_fits[s_idx[:len(pop)]].copy()
+        while len(top_pop) < len(pop):
+            top_pop = np.vstack([top_pop, top_pop[0]])
+            top_fits = np.append(top_fits, top_fits[0])
+        pop_ga, fits_ga = top_pop.copy(), top_fits.copy()
+        pop_po, fits_po = top_pop.copy(), top_fits.copy()
 
         cur += steps
 
@@ -179,11 +175,7 @@ def run_c1_cooperative_exchange(config, dist_matrix, labels, num_classes, initia
         history.append(history[-1])
     history = history[:total_iters]
 
-    if fits_ga[0] >= fits_po[0]:
-        best_pos, best_fit = pop_ga[0].copy(), float(fits_ga[0])
-    else:
-        best_pos, best_fit = pop_po[0].copy(), float(fits_po[0])
-
+    best_pos, best_fit = pop_po[0].copy(), float(fits_po[0])
     print(f"Hoàn thành C1 | Best Fitness: {best_fit:.4f}")
     return best_pos, best_fit, history
 

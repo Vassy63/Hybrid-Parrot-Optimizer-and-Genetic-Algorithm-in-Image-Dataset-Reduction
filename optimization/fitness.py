@@ -78,10 +78,14 @@ def compute_compression(solution_vector: np.ndarray) -> float:
 def compute_raw_fitness(solution: np.ndarray, dist_matrix: np.ndarray, labels: np.ndarray, num_classes: int) -> np.ndarray:
     """Trả về 4 thành phần [Div, Cov, Bal, Com] đều thuộc [0, 1]."""
     selected_idx = np.where(solution == 1)[0]
-    if len(selected_idx) < 2:
+    M = len(selected_idx)
+    if M < 2:
         return np.array([0.0, 0.0, 0.0, 0.0], dtype=np.float64)
-    div = compute_diversity(dist_matrix, selected_idx)
-    cov = compute_coverage(dist_matrix, selected_idx)
+    dist_pt = _get_dist_tensor(dist_matrix)
+    idx_pt = torch.as_tensor(selected_idx, dtype=torch.long, device=dist_pt.device)
+    cols = torch.index_select(dist_pt, 1, idx_pt)
+    div = float(torch.index_select(cols, 0, idx_pt).sum().item() / (M * (M - 1)))
+    cov = float(max(0.0, 1.0 - cols.min(dim=1)[0].mean().item()))
     bal = compute_balance(labels, selected_idx, num_classes)
     com = compute_compression(solution)
     return np.array([div, cov, bal, com], dtype=np.float64)
