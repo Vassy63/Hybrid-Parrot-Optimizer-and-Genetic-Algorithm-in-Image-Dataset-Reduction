@@ -42,6 +42,27 @@ do thuật toán chọn tập con và huấn luyện, không phải 30 cách chi
 
 ## 3. Chạy lần đầu
 
+### Kiểm tra trước bằng CPU
+
+Import [kaggle_cpu_smoke_test.ipynb](kaggle_cpu_smoke_test.ipynb), chọn **Accelerator: None**,
+bật Internet và thêm cùng ZIP source + Intel dataset. Chạy **Run All**.
+Notebook dùng 120 ảnh train, 1 seed, 1 epoch và 2 vòng tối ưu để chạy thật
+đủ 11 phương pháp × 3 CNN. Không dùng mock model hoặc ảnh giả.
+
+Cuối quá trình phải in **`CPU_SMOKE_PASS`** và tạo:
+
+- `/kaggle/working/cpu_smoke/CPU_SMOKE_REPORT.json`.
+- `/kaggle/working/cpu_smoke_seed1.zip`: đầy đủ CSV, log, biểu đồ, mask, metadata, 33 checkpoint.
+
+Kiểm tra gồm nạp ZIP/thư mục source, nhận diện dataset, thư viện, trích đặc trưng,
+thuật toán, huấn luyện/đánh giá CPU, đọc lại checkpoint, số dòng kết quả,
+ZIP CRC và giải nén khôi phục. Chạy lại ô benchmark để kiểm tra bỏ qua seed đã xong và tạo lại ZIP.
+Internet cần để tải trọng số pretrained nếu chưa cache; CPU không cần bật GPU.
+Kết quả smoke test nằm riêng và **không được gộp vào benchmark 20 epoch**.
+PASS trên CPU không xác nhận CUDA/VRAM, thời gian chạy toàn dataset, quota hay độ chính xác cuối cùng.
+
+### Chạy benchmark GPU
+
 1. Tải đúng notebook được phân công từ nhánh `jaxy` của repository.
 2. Trên Kaggle chọn **New Notebook → File → Import Notebook**, chọn file `.ipynb`.
 3. Bật **GPU** (T4 hoặc P100) và **Internet** để tải trọng số ImageNet. Nên dùng cùng loại GPU cho cả ba người khi so sánh thời gian.

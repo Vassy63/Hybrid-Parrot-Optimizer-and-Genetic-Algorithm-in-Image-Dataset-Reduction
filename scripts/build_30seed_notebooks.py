@@ -209,3 +209,111 @@ print('Người', PERSON, '| Seeds được chọn:', SEEDS_TO_RUN)
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(notebook, ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
     print(destination)
+
+# Dùng chung bộ nạp source và vòng chạy/xuất ZIP với notebook thật.
+cpu_setup = SETUP.replace('assert torch.cuda.is_available(), "Bật GPU trong Notebook options trước khi chạy."',
+                          'assert not torch.cuda.is_available(), "CPU smoke test phải chạy với Accelerator=None."')
+cpu_setup = cpu_setup.replace("torch.cuda.get_device_name(0)", "'CPU'")
+cpu_run = RUN.replace("Path(f'/kaggle/working/person{PERSON}')", "Path('/kaggle/working/cpu_smoke')")
+cpu_run = cpu_run.replace("f'/kaggle/working/person{PERSON}_seed{seed}.zip'", "f'/kaggle/working/cpu_smoke_seed{seed}.zip'")
+cpu_run = cpu_run.replace("f'person{PERSON}_seed*.zip'", "'cpu_smoke_seed*.zip'")
+cpu_run = cpu_run.replace("'--epochs', '20'", "'--epochs', '1', '--num_samples', '120'")
+cpu_run = cpu_run.replace("'--population_size', '20', '--total_iterations', '100'", "'--population_size', '6', '--total_iterations', '2'")
+cpu_run = cpu_run.replace("'--phase_size', '10', '--exchange_k', '3'", "'--phase_size', '1', '--exchange_k', '1'")
+cpu_run = cpu_run.replace('seed=seed, epochs=20', 'seed=seed, epochs=1')
+cpu_run = cpu_run.replace('estimated_seed_hours = 6.5', 'estimated_seed_hours = 0.1')
+
+cpu_validator = '''# Kiểm tra riêng profile 1 epoch; không dùng kết quả này trong benchmark 20 epoch.
+import csv, math
+def read_seed(folder, source_sha=None):
+    folder = Path(folder)
+    metadata = json.loads((folder / 'DONE.json').read_text(encoding='utf-8'))
+    assert metadata['source_sha'] == source_sha, 'Source snapshot không khớp.'
+    assert metadata['epochs'] == 1 and metadata['split_seed'] == 42
+    result_path = (folder / metadata['csv']).resolve()
+    assert result_path.is_relative_to(folder.resolve())
+    with result_path.open(encoding='utf-8', newline='') as handle:
+        rows = list(csv.DictReader(handle))
+    expected = {(method, model, 1) for method in METHODS for model in MODELS}
+    assert len(rows) == 33 and {(r['Method'], r['Model'], int(r['Seed'])) for r in rows} == expected
+    assert all(math.isfinite(float(row[key])) for row in rows
+               for key in ('Test_Acc', 'Val_Acc', 'Macro_F1', 'Train_Time_Sec', 'ARR_Percent', 'Speedup'))
+    return metadata, rows
+'''
+
+cpu_verify = '''# Kiểm tra checkpoint, log, ZIP và khôi phục; không khởi chạy huấn luyện mới.
+import tempfile
+import numpy as np
+metadata, rows = read_seed(OUTPUT_ROOT / 'seed1', SOURCE_SHA)
+run_dir = OUTPUT_ROOT / 'seed1' / Path(metadata['csv']).parent
+subsets = sorted((run_dir / 'subsets').glob('subset_*_seed1.npy'))
+assert len(subsets) == 10
+for path in subsets:
+    mask = np.load(path, allow_pickle=False)
+    assert mask.shape == (120,) and set(np.unique(mask)).issubset({0, 1}) and mask.sum() > 0
+assert (run_dir / 'convergence_histories.csv').is_file()
+checkpoints = sorted((run_dir / 'model_runs').glob('*/*/weights/*_best.pth'))
+assert len(checkpoints) == 33
+for path in checkpoints:
+    checkpoint = torch.load(path, map_location='cpu', weights_only=True)
+    assert checkpoint['epoch'] == 1 and checkpoint['model_state_dict']
+logs = list((run_dir / 'model_runs').glob('*/*/logs/run_metadata.json'))
+assert len(logs) == 33
+for path in logs:
+    config = json.loads(path.read_text(encoding='utf-8'))['config']
+    assert config['device'] == 'cpu' and config['epochs'] == 1 and config['num_samples'] == 120
+assert len(list((run_dir / 'model_runs').glob('*/*/logs/training_log.csv'))) == 33
+assert len(list((run_dir / 'model_runs').glob('*/*/plots/*_curve.png'))) == 33
+archive = Path('/kaggle/working/cpu_smoke_seed1.zip')
+with zipfile.ZipFile(archive) as saved:
+    assert saved.testzip() is None, 'ZIP lỗi CRC.'
+    assert sum(name.endswith('.pth') for name in saved.namelist()) == 33
+    with tempfile.TemporaryDirectory(dir='/kaggle/temp') as restored:
+        saved.extractall(restored)  # ZIP vừa được tạo từ output do notebook kiểm soát.
+        read_seed(Path(restored) / 'seed1', SOURCE_SHA)
+report = dict(status='CPU_SMOKE_PASS', device='cpu', samples=120, epochs=1,
+              methods=11, models=3, result_rows=len(rows), subsets=len(subsets), checkpoints=len(checkpoints),
+              zip_crc='PASS', restore='PASS', source_sha=SOURCE_SHA,
+              scope='CPU tiny-data pipeline only; GPU/CUDA, full-data runtime and quota not tested')
+(OUTPUT_ROOT / 'CPU_SMOKE_REPORT.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
+print(json.dumps(report, indent=2))
+print('Chạy lại ô benchmark ngay phía trên để kiểm tra bỏ qua seed đã xong và nén lại ZIP.')
+'''
+
+cpu_cells = [
+    ('markdown', '''# Kiểm tra pipeline trên Kaggle CPU — chưa cần bật GPU
+
+**Accelerator: None**. Bật Internet, thêm cùng ZIP source và Intel dataset như notebook thật.
+Chạy Run All: nạp source (kể cả ZIP đổi tên), tìm dataset, trích đặc trưng thật,
+chạy toàn bộ 11 phương pháp × 3 CNN trên 120 ảnh train, 1 seed, 1 epoch và ngân sách tối ưu rất nhỏ.
+Sau đó kiểm tra đủ 33 dòng CSV, 33 checkpoint, log, biểu đồ, ZIP CRC và giải nén khôi phục.
+Kết quả chỉ dùng kiểm tra kỹ thuật, không dùng báo cáo độ chính xác hay trộn với benchmark 20 epoch.
+
+Cần tải trọng số ImageNet nếu chưa cache. Chưa có thời gian chạy đảm bảo trên CPU Kaggle.
+`CPU_SMOKE_PASS` xác nhận đường chạy CPU với dữ liệu nhỏ; không xác nhận CUDA,
+VRAM, thời gian chạy toàn bộ dataset hoặc quota GPU.
+Source/cache ở `/kaggle/temp`; kết quả ở `/kaggle/working/cpu_smoke` và `cpu_smoke_seed1.zip`.
+'''),
+    ('code', '''import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+os.environ['OMP_NUM_THREADS'] = '1'
+os.environ['MKL_NUM_THREADS'] = '1'
+SOURCE_ZIP = ''  # Tự tìm ZIP source trong Input; có thể điền đường dẫn ZIP/thư mục.
+PERSON = 0
+SEEDS = list(range(1, 11))
+SEEDS_TO_RUN = [1]
+MAX_SESSION_HOURS = 10.5
+AVAILABLE_GPU_HOURS = 30.0  # Chỉ tái sử dụng cơ chế giới hạn phiên; không bật GPU.
+'''),
+    ('code', cpu_setup), ('code', cpu_validator + '\n' + cpu_run), ('code', cpu_verify),
+]
+cells = []
+for cell_type, content in cpu_cells:
+    cell = dict(cell_type=cell_type, metadata={}, source=content.splitlines(keepends=True))
+    if cell_type == 'code':
+        cell.update(execution_count=None, outputs=[])
+    cells.append(cell)
+cpu_notebook = dict(cells=cells, metadata=dict(kernelspec=dict(display_name='Python 3', language='python', name='python3'), language_info=dict(name='python')), nbformat=4, nbformat_minor=4)
+destination = ROOT / 'notebooks/kaggle_cpu_smoke_test.ipynb'
+destination.write_text(json.dumps(cpu_notebook, ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
+print(destination)

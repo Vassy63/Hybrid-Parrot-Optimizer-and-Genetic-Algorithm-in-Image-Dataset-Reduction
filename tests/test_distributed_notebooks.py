@@ -49,7 +49,12 @@ class DistributedNotebooksTest(unittest.TestCase):
                 def poll(self):
                     return 0
 
-            with patch('subprocess.Popen', Process), contextlib.redirect_stdout(io.StringIO()):
+            with patch('subprocess.Popen', Process), patch('zipfile.ZipFile.write', side_effect=OSError('simulated export interruption')), contextlib.redirect_stdout(io.StringIO()):
+                with self.assertRaisesRegex(OSError, 'simulated export interruption'):
+                    exec(source, namespace)
+            self.assertTrue((work / 'person1/seed1/DONE.json').exists())
+            self.assertEqual(len(list((work / 'person1/seed1').rglob('*.pth'))), 33)
+            with patch('subprocess.Popen', side_effect=AssertionError('Export retry must not retrain')), contextlib.redirect_stdout(io.StringIO()):
                 exec(source, namespace)
             self.assertTrue((work / 'person1_seed1.zip').exists())
             with zipfile.ZipFile(work / 'person1_seed1.zip') as archive:
