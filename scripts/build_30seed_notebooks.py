@@ -22,12 +22,31 @@ import torch
 
 assert torch.cuda.is_available(), "Bật GPU trong Notebook options trước khi chạy."
 # Mã nguồn và cache ở /kaggle/temp; /kaggle/working chỉ dành cho kết quả.
+input_root = Path('/kaggle/input')
+
+def source_roots(directory):
+    return sorted(path.parent for path in directory.rglob('run_poga.py') if (path.parent / 'train.py').is_file())
+
+def contains_source(path):
+    try:
+        with zipfile.ZipFile(path) as archive:
+            names = set(archive.namelist())
+            return any(name.endswith('run_poga.py') and name[:-len('run_poga.py')] + 'train.py' in names for name in names)
+    except zipfile.BadZipFile:
+        return False
+
 if SOURCE_ZIP:
-    archives = [Path(SOURCE_ZIP)]
+    selected = Path(SOURCE_ZIP)
+    if not selected.exists():
+        raise FileNotFoundError(f'SOURCE_ZIP không tồn tại: {selected}. Kiểm tra đường dẫn trong Kaggle Input.')
+    archives = [] if selected.is_dir() else [selected]
+    roots = source_roots(selected) if selected.is_dir() else []
 else:
-    archives = sorted(Path('/kaggle/input').rglob('KhoaLuanDatasetReduction_30seeds_source.zip'))
+    archives = [path for path in sorted(input_root.rglob('*.zip')) if contains_source(path)]
+    roots = source_roots(input_root) if not archives else []
 if archives:
-    assert len(archives) == 1, 'Có nhiều ZIP mã nguồn; điền đường dẫn SOURCE_ZIP.'
+    if len(archives) != 1:
+        raise ValueError('Có nhiều ZIP mã nguồn. Điền SOURCE_ZIP bằng một đường dẫn sau:\\n' + '\\n'.join(map(str, archives)))
     source_archive = archives[0]
     archive_sha = hashlib.sha256(source_archive.read_bytes()).hexdigest()
     extracted = Path('/kaggle/temp') / f'poga_source_{archive_sha[:16]}'
@@ -37,12 +56,12 @@ if archives:
             if not (extracted / entry.filename).resolve().is_relative_to(extracted.resolve()):
                 raise ValueError(f'Unsafe archive path: {entry.filename}')
         archive.extractall(extracted)
-    roots = [path.parent for path in extracted.rglob('run_poga.py') if (path.parent / 'train.py').is_file()]
-else:
-    # Kaggle có thể tự giải nén ZIP khi tạo Dataset.
-    roots = [path.parent for path in Path('/kaggle/input').rglob('run_poga.py') if (path.parent / 'train.py').is_file()]
-assert len(roots) == 1, 'Thêm ZIP source vào Input hoặc điền SOURCE_ZIP; cần đúng một bộ mã nguồn.'
+    roots = source_roots(extracted)
+if len(roots) != 1:
+    available = '\\n'.join(map(str, sorted(input_root.iterdir()))) if input_root.exists() else '(Input không tồn tại)'
+    raise ValueError(f'Tìm thấy {len(roots)} bộ mã nguồn: {list(map(str, roots))}. Thêm ZIP có run_poga.py và train.py vào Input, hoặc điền SOURCE_ZIP là đường dẫn ZIP/thư mục source. Input hiện có:\\n{available}')
 source_root = roots[0]
+print('Source được chọn:', source_root)
 sources = {path.relative_to(source_root).as_posix(): path.read_text(encoding='utf-8')
            for path in sorted(source_root.rglob('*.py')) if '__pycache__' not in path.parts}
 assert 'scripts/merge_seed_results.py' in sources and '--benchmark_seeds' in sources['run_poga.py'], 'Source ZIP cũ; hãy upload ZIP 30seeds mới.'
@@ -174,7 +193,7 @@ Xem `notebooks/HUONG_DAN_30_SEEDS.md` trong repository để gộp kết quả.
     config = f'''PERSON = {person}
 SEEDS = {seeds!r}
 SEEDS_TO_RUN = SEEDS[:5]  # Đợt 1: 5 seed đầu. Đợt 2: đổi thành SEEDS[5:].
-SOURCE_ZIP = ''  # Để trống để tự tìm ZIP source trong Input; có thể điền đường dẫn cụ thể.
+SOURCE_ZIP = ''  # Tự tìm theo nội dung ZIP; có thể điền đường dẫn ZIP hoặc thư mục source đã giải nén.
 MAX_SESSION_HOURS = 10.5  # Dừng trước seed tiếp theo; không ngắt seed đang chạy.
 AVAILABLE_GPU_HOURS = 30.0  # Điền quota thực tế còn lại trong Kaggle trước mỗi phiên.
 print('Người', PERSON, '| Seeds được chọn:', SEEDS_TO_RUN)

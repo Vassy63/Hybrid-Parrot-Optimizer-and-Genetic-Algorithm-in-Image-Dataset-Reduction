@@ -48,7 +48,9 @@ do thuật toán chọn tập con và huấn luyện, không phải 30 cách chi
 4. Add Input: `puneet6060/intel-image-classification`. Chỉ thêm một bản dataset ảnh.
    Tạo thêm một Kaggle Dataset chứa [KhoaLuanDatasetReduction_30seeds_source.zip](KhoaLuanDatasetReduction_30seeds_source.zip),
    rồi thêm Dataset đó vào Input của cả ba notebook. Nếu Kaggle tự giải nén ZIP, notebook cũng nhận diện được source đã giải nén.
-   Ô `SOURCE_ZIP = ''` tự tìm ZIP theo tên; nếu có nhiều ZIP, điền đường dẫn cụ thể trong `/kaggle/input/...`.
+   Ô `SOURCE_ZIP = ''` tự tìm ZIP chứa `run_poga.py` và `train.py`, kể cả khi ZIP bị đổi tên hoặc có thư mục bọc ngoài.
+   Nếu có nhiều bộ source, điền `SOURCE_ZIP` là đường dẫn cụ thể tới ZIP hoặc thư mục đã giải nén trong `/kaggle/input/...`.
+   Nếu không tìm thấy, notebook liệt kê các Input hiện có để kiểm tra dataset source đã được Add Input hay chưa.
 5. Ô cấu hình có sẵn `PERSON` và `SEEDS`. Mặc định chọn 5 seed đầu cho đợt 1.
    Nếu muốn chạy từng seed, đặt `SEEDS_TO_RUN = [1]` cho người 1, hoặc seed thuộc phần của mình.
 6. Chạy ô cấu hình, ô chuẩn bị, rồi ô benchmark. Source ZIP bắt buộc có `run_poga.py` hỗ trợ `--benchmark_seeds`

@@ -91,7 +91,8 @@ class DistributedNotebooksTest(unittest.TestCase):
             setup_cells.append(''.join(notebook['cells'][2]['source']))
             self.assertEqual(assignments['SOURCE_ZIP'], '')
             config = {}
-            exec(''.join(notebook['cells'][1]['source']), config)
+            with contextlib.redirect_stdout(io.StringIO()):
+                exec(''.join(notebook['cells'][1]['source']), config)
             self.assertEqual(config['SEEDS_TO_RUN'], seeds[:5])
         self.assertEqual(sorted(all_seeds), list(range(1, 31)))
         self.assertEqual(setup_cells[0], setup_cells[1])
@@ -115,7 +116,7 @@ class DistributedNotebooksTest(unittest.TestCase):
             work = Path(tmp).resolve()
             inputs = work / 'input'
             inputs.mkdir()
-            shutil.copy(root / 'notebooks/KhoaLuanDatasetReduction_30seeds_source.zip', inputs)
+            shutil.copy(root / 'notebooks/KhoaLuanDatasetReduction_30seeds_source.zip', inputs / 'my_uploaded_source.zip')
             for split in ('seg_train', 'seg_test'):
                 for name in ('buildings', 'forest', 'glacier', 'mountain', 'sea', 'street'):
                     (inputs / 'intel' / split / split / name).mkdir(parents=True)
@@ -127,6 +128,19 @@ class DistributedNotebooksTest(unittest.TestCase):
                     exec(source, namespace)
                     self.assertTrue((namespace['WORK_DIR'] / 'run_poga.py').is_file())
                     self.assertEqual(Path(namespace['TRAIN_DIR']).parts[-2:], ('seg_train', 'seg_train'))
+                    shutil.copy(inputs / 'my_uploaded_source.zip', inputs / 'second_source.zip')
+                    with self.assertRaisesRegex(ValueError, 'second_source.zip'):
+                        exec(source, namespace)
+                    unpacked = inputs / 'unpacked'
+                    with zipfile.ZipFile(inputs / 'my_uploaded_source.zip') as archive:
+                        archive.extractall(unpacked)
+                    namespace['SOURCE_ZIP'] = str(unpacked)
+                    exec(source, namespace)
+                    empty = inputs / 'empty'
+                    empty.mkdir()
+                    namespace['SOURCE_ZIP'] = str(empty)
+                    with self.assertRaisesRegex(ValueError, '0 bộ mã nguồn'):
+                        exec(source, namespace)
                     malicious = inputs / 'unsafe.zip'
                     with zipfile.ZipFile(malicious, 'w') as archive:
                         archive.writestr('../../escape.py', 'bad')
