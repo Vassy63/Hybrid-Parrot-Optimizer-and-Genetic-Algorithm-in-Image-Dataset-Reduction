@@ -1,30 +1,54 @@
-"""Regenerate the three self-contained Kaggle notebooks from this checkout."""
-import base64
+"""Build three Kaggle notebooks and their shared source ZIP."""
 import json
 from pathlib import Path
-import zlib
+import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 files = ['__init__.py', 'train.py', 'run_poga.py', 'scripts/merge_seed_results.py']
 for package in ('configs', 'data', 'models', 'optimization', 'training', 'utils'):
     files.extend(p.relative_to(ROOT).as_posix() for p in sorted((ROOT / package).glob('*.py')))
-payload = {name: (ROOT / name).read_text(encoding='utf-8') for name in files}
-encoded = base64.b64encode(zlib.compress(json.dumps(payload, ensure_ascii=False, sort_keys=True).encode('utf-8'))).decode('ascii')
+source_zip = ROOT / 'notebooks' / 'KhoaLuanDatasetReduction_30seeds_source.zip'
+source_zip.parent.mkdir(parents=True, exist_ok=True)
+with zipfile.ZipFile(source_zip, 'w', zipfile.ZIP_DEFLATED) as archive:
+    for name in sorted(files):
+        entry = zipfile.ZipInfo(name, date_time=(2026, 1, 1, 0, 0, 0))
+        entry.compress_type = zipfile.ZIP_DEFLATED
+        archive.writestr(entry, (ROOT / name).read_text(encoding='utf-8').encode('utf-8'))
+print(source_zip)
 
-SETUP = '''import os, sys, json, base64, zlib, hashlib, platform
+SETUP = '''import os, sys, json, hashlib, platform, zipfile, shutil
 from pathlib import Path
 import torch
 
 assert torch.cuda.is_available(), "Bật GPU trong Notebook options trước khi chạy."
-WORK_DIR = Path('/kaggle/working/KhoaLuanDatasetReduction')
-WORK_DIR.mkdir(parents=True, exist_ok=True)
-CODE_B64 = __PAYLOAD__
-source_bytes = zlib.decompress(base64.b64decode(CODE_B64))
-SOURCE_SHA = hashlib.sha256(source_bytes).hexdigest()
-for name, content in json.loads(source_bytes).items():
-    destination = WORK_DIR / name
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_text(content, encoding='utf-8')
+# Mã nguồn và cache ở /kaggle/temp; /kaggle/working chỉ dành cho kết quả.
+if SOURCE_ZIP:
+    archives = [Path(SOURCE_ZIP)]
+else:
+    archives = sorted(Path('/kaggle/input').rglob('KhoaLuanDatasetReduction_30seeds_source.zip'))
+if archives:
+    assert len(archives) == 1, 'Có nhiều ZIP mã nguồn; điền đường dẫn SOURCE_ZIP.'
+    source_archive = archives[0]
+    archive_sha = hashlib.sha256(source_archive.read_bytes()).hexdigest()
+    extracted = Path('/kaggle/temp') / f'poga_source_{archive_sha[:16]}'
+    extracted.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(source_archive) as archive:
+        for entry in archive.infolist():
+            if not (extracted / entry.filename).resolve().is_relative_to(extracted.resolve()):
+                raise ValueError(f'Unsafe archive path: {entry.filename}')
+        archive.extractall(extracted)
+    roots = [path.parent for path in extracted.rglob('run_poga.py') if (path.parent / 'train.py').is_file()]
+else:
+    # Kaggle có thể tự giải nén ZIP khi tạo Dataset.
+    roots = [path.parent for path in Path('/kaggle/input').rglob('run_poga.py') if (path.parent / 'train.py').is_file()]
+assert len(roots) == 1, 'Thêm ZIP source vào Input hoặc điền SOURCE_ZIP; cần đúng một bộ mã nguồn.'
+source_root = roots[0]
+sources = {path.relative_to(source_root).as_posix(): path.read_text(encoding='utf-8')
+           for path in sorted(source_root.rglob('*.py')) if '__pycache__' not in path.parts}
+assert 'scripts/merge_seed_results.py' in sources and '--benchmark_seeds' in sources['run_poga.py'], 'Source ZIP cũ; hãy upload ZIP 30seeds mới.'
+SOURCE_SHA = hashlib.sha256(json.dumps(sources, ensure_ascii=False, sort_keys=True).encode('utf-8')).hexdigest()
+WORK_DIR = Path('/kaggle/temp') / f'KhoaLuanDatasetReduction_{SOURCE_SHA[:16]}'
+shutil.copytree(source_root, WORK_DIR, dirs_exist_ok=True)
 os.chdir(WORK_DIR)
 sys.path.insert(0, str(WORK_DIR))
 os.environ['PYTHONPATH'] = str(WORK_DIR)
@@ -54,10 +78,16 @@ OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
 
 def archive_seed(seed):
     folder = OUTPUT_ROOT / f'seed{seed}'
+    metadata, _ = read_seed(folder, SOURCE_SHA)
+    run_dir = folder / Path(metadata['csv']).parent
+    # Mỗi seed phải có checkpoint cho 11 phương pháp × 3 CNN.
+    checkpoints = list((run_dir / 'model_runs').glob('*/*/weights/*_best.pth'))
+    if len(checkpoints) != 33:
+        raise ValueError(f'Seed {seed} thiếu checkpoint: {len(checkpoints)}/33. ZIP cũ bỏ trọng số không đủ để khôi phục đầy đủ; cần chạy lại seed.')
     archive = Path(f'/kaggle/working/person{PERSON}_seed{seed}.zip')
     with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as output:
         for path in folder.rglob('*'):
-            if path.is_file() and (INCLUDE_WEIGHTS or path.suffix != '.pth'):
+            if path.is_file():
                 output.write(path, path.relative_to(OUTPUT_ROOT))
     print('ZIP:', archive)
 
@@ -131,10 +161,10 @@ for person in range(1, 4):
 20 epoch × 11 phương pháp (Full B0 + 10 phương pháp rút gọn) × 3 CNN × 10 seed = **330 lượt huấn luyện/người**.
 
 1. Import notebook vào Kaggle, bật **GPU** và **Internet**; thêm `puneet6060/intel-image-classification`.
-2. Chạy các ô theo thứ tự. Mã nguồn đã nhúng giống nhau trong cả ba notebook.
-3. Có thể chọn vài seed mỗi phiên bằng `SEEDS_TO_RUN`. Seed đang dở sẽ chạy lại; seed có `DONE.json` hợp lệ sẽ bỏ qua.
+2. Thêm ZIP `KhoaLuanDatasetReduction_30seeds_source.zip` vào Input. Cả ba người dùng cùng ZIP. Chạy các ô theo thứ tự; không có mã nguồn nhúng.
+3. Đợt đầu mặc định chọn 5 seed đầu bằng `SEEDS_TO_RUN = SEEDS[:5]` (165 lượt CNN/người). Đợt sau đổi thành `SEEDS[5:]`. Có thể cần nhiều phiên cho mỗi đợt.
 4. Sau mỗi seed, tải `person{person}_seedS.zip` trong `/kaggle/working`. Lần sau thêm ZIP đó vào Input rồi chạy lại.
-5. ZIP mặc định gồm CSV, log, biểu đồ, mask và metadata; **không chứa trọng số .pth**. Đổi `INCLUDE_WEIGHTS=True` nếu cần.
+5. ZIP chứa **đầy đủ kết quả, kể cả checkpoint .pth**. Source và cache nằm ở `/kaggle/temp`; `/kaggle/working` dành cho kết quả và ZIP.
 
 Split train/validation cố định ở 42; seed tối ưu và seed huấn luyện thay đổi theo seed thực nghiệm.
 B0 được huấn luyện thực tế cùng seed, epoch và GPU với các phương pháp còn lại.
@@ -143,14 +173,14 @@ Xem `notebooks/HUONG_DAN_30_SEEDS.md` trong repository để gộp kết quả.
 '''
     config = f'''PERSON = {person}
 SEEDS = {seeds!r}
-SEEDS_TO_RUN = SEEDS[:]  # Ví dụ SEEDS[:2] để chạy 2 seed trong phiên này.
-INCLUDE_WEIGHTS = False
+SEEDS_TO_RUN = SEEDS[:5]  # Đợt 1: 5 seed đầu. Đợt 2: đổi thành SEEDS[5:].
+SOURCE_ZIP = ''  # Để trống để tự tìm ZIP source trong Input; có thể điền đường dẫn cụ thể.
 MAX_SESSION_HOURS = 10.5  # Dừng trước seed tiếp theo; không ngắt seed đang chạy.
 AVAILABLE_GPU_HOURS = 30.0  # Điền quota thực tế còn lại trong Kaggle trước mỗi phiên.
 print('Người', PERSON, '| Seeds được chọn:', SEEDS_TO_RUN)
 '''
     cells = []
-    for cell_type, content in [('markdown', title), ('code', config), ('code', SETUP.replace('__PAYLOAD__', repr(encoded))), ('code', RUN)]:
+    for cell_type, content in [('markdown', title), ('code', config), ('code', SETUP), ('code', RUN)]:
         cell = dict(cell_type=cell_type, metadata={}, source=content.splitlines(keepends=True))
         if cell_type == 'code':
             cell.update(execution_count=None, outputs=[])

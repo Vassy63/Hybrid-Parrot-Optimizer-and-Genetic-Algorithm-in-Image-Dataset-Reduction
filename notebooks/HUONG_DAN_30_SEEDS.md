@@ -13,6 +13,17 @@ GA, PO, S1, S2, S3, S4, P1, C1. Mỗi phương pháp được đánh giá trên
 ResNet-18, MobileNetV3-Small và DenseNet-121: 33 lượt/seed, tổng cộng **990 lượt**.
 Chia đều số công việc; thời gian thực tế phụ thuộc GPU và phiên Kaggle của mỗi người.
 
+**Trước mắt chạy đợt 1, mỗi người 5 seed:**
+
+| Đợt | Người 1 | Người 2 | Người 3 | Tổng seed | Lượt CNN/người |
+|---|---|---|---|---:|---:|
+| 1 (mặc định) | 1–5 | 11–15 | 21–25 | 15 | 165 |
+| 2 (chạy sau) | 6–10 | 16–20 | 26–30 | 15 | 165 |
+
+Đợt 1 dùng `SEEDS_TO_RUN = SEEDS[:5]`; đợt 2 đổi thành `SEEDS_TO_RUN = SEEDS[5:]`.
+Mỗi đợt có thể cần nhiều phiên và vượt sang tuần sau nếu quota không đủ.
+Công cụ gộp kết quả cuối vẫn yêu cầu đủ cả 30 seed sau hai đợt.
+
 ## 2. Cấu hình thống nhất
 
 - 20 epoch, batch size 64, Adam, learning rate 0.001, weight decay 0.0001.
@@ -22,7 +33,8 @@ Chia đều số công việc; thời gian thực tế phụ thuộc GPU và phi
 - Population 20, total iterations 100, phase size 10, exchange k 3.
 - Fitness theo snapshot: Div 0.15, Cov 0.45, Bal 0.20, Com 0.20.
 - B0 được huấn luyện thực tế cho từng seed. ARR, Delta Acc và Speedup dùng B0 cùng model và seed.
-- Các notebook nhúng cùng snapshot mã nguồn và ghi SHA256 vào `DONE.json`.
+- Cả ba người upload cùng file `KhoaLuanDatasetReduction_30seeds_source.zip` làm Kaggle Input; notebook không chứa `CODE_B64`.
+- Notebook ghi SHA256 nội dung mã nguồn vào `DONE.json` để kiểm tra khi khôi phục/gộp.
 
 Không sửa các giá trị trên giữa ba người. Đổi `SEEDS_TO_RUN` để chia nhỏ phiên
 không làm thay đổi cấu hình thực nghiệm. Split cố định nghĩa là 30 lần đo biến thiên
@@ -34,9 +46,13 @@ do thuật toán chọn tập con và huấn luyện, không phải 30 cách chi
 2. Trên Kaggle chọn **New Notebook → File → Import Notebook**, chọn file `.ipynb`.
 3. Bật **GPU** (T4 hoặc P100) và **Internet** để tải trọng số ImageNet. Nên dùng cùng loại GPU cho cả ba người khi so sánh thời gian.
 4. Add Input: `puneet6060/intel-image-classification`. Chỉ thêm một bản dataset ảnh.
-5. Ô cấu hình có sẵn `PERSON` và `SEEDS`. Mặc định chạy 10 seed được phân công.
+   Tạo thêm một Kaggle Dataset chứa [KhoaLuanDatasetReduction_30seeds_source.zip](KhoaLuanDatasetReduction_30seeds_source.zip),
+   rồi thêm Dataset đó vào Input của cả ba notebook. Nếu Kaggle tự giải nén ZIP, notebook cũng nhận diện được source đã giải nén.
+   Ô `SOURCE_ZIP = ''` tự tìm ZIP theo tên; nếu có nhiều ZIP, điền đường dẫn cụ thể trong `/kaggle/input/...`.
+5. Ô cấu hình có sẵn `PERSON` và `SEEDS`. Mặc định chọn 5 seed đầu cho đợt 1.
    Nếu muốn chạy từng seed, đặt `SEEDS_TO_RUN = [1]` cho người 1, hoặc seed thuộc phần của mình.
-6. Chạy ô cấu hình, ô chuẩn bị, rồi ô benchmark. Không cần upload source ZIP hay clone Git.
+6. Chạy ô cấu hình, ô chuẩn bị, rồi ô benchmark. Source ZIP bắt buộc có `run_poga.py` hỗ trợ `--benchmark_seeds`
+   và `scripts/merge_seed_results.py`; dùng file ZIP mới kèm bộ notebook này. Không cần clone Git.
 7. Theo dõi thông báo định kỳ; log chi tiết nằm ở `/kaggle/working/personN/seedS/console.log`.
 
 Chương trình chạy tuần tự trên một GPU; bật T4 x2 không tự động chia đôi công việc.
@@ -57,16 +73,23 @@ Sau mỗi seed hoàn tất và đủ 33 dòng kết quả, notebook tạo:
       convergence_histories.csv
       model_runs/<method>_seedS/<model>/logs/
       model_runs/<method>_seedS/<model>/plots/
+      model_runs/<method>_seedS/<model>/weights/<model>_best.pth
       subsets/
       plots/
 ```
 
 - **Tải từng ZIP sau khi hoàn tất seed, trước khi kết thúc phiên.** ZIP nằm trong Output/Files của Kaggle.
-- ZIP mặc định bỏ `.pth` để giảm dung lượng; trọng số vẫn nằm trong thư mục phiên hiện tại.
-  Đặt `INCLUDE_WEIGHTS=True` trước khi chạy nếu muốn mang cả checkpoint sang phiên sau.
+- ZIP chứa **toàn bộ file trong thư mục seed**, bao gồm checkpoint `.pth`, log huấn luyện từng epoch,
+  CSV phân loại, metadata từng mô hình, biểu đồ, mask `.npy`, lịch sử hội tụ và báo cáo thống kê.
+  Không lọc bỏ trọng số. `DONE.json` và `console.log` cũng có trong ZIP.
+- `/kaggle/working/personN/seedS/` giữ bản kết quả đầy đủ chưa nén; ZIP `personN_seedS.zip` nằm cùng vùng Output.
+  Mã nguồn và cache đặc trưng nằm trong `/kaggle/temp`, nên không lẫn trong vùng Output này.
+  Dataset ảnh vẫn ở Input; source ZIP là đầu vào, không phải kết quả.
 - Phiên mới: thêm các ZIP `personN_seedS.zip` đã tải vào Kaggle Input, import lại **cùng notebook** và chạy.
   Nếu Kaggle tự giải nén file khi tạo Dataset, hãy upload ZIP nằm trong một thư mục con và giữ file ZIP trong Input.
 - Notebook khôi phục ZIP, kiểm tra snapshot/cấu hình/33 dòng rồi bỏ qua seed đã xong.
+- Trước khi tạo ZIP đầy đủ, notebook kiểm tra có đủ 33 checkpoint. ZIP cũ từng bỏ `.pth`
+  không đủ để khôi phục output đầy đủ; cần chạy lại seed đó trong phiên sạch, không thêm ZIP thiếu trọng số vào Input.
 - Seed đang dở khi mất phiên sẽ phải chạy lại; chưa hỗ trợ tiếp tục ở giữa một seed.
 - Nếu source SHA khác hoặc CSV thiếu/sai dòng, notebook dừng để tránh gộp sai dữ liệu.
 - Không dùng `descriptive_statistics.csv` của một seed làm thống kê cuối cho 30 seed.
@@ -97,7 +120,7 @@ có cột riêng `Opt_Time_Sec`. Khác GPU có thể làm so sánh thời gian g
 
 ## 6. Dành cho người duy trì mã nguồn
 
-Notebook nhúng snapshot của các file Python tại thời điểm sinh. Sau khi sửa mã, tạo lại cả ba notebook cùng lúc:
+Sau khi sửa mã, tạo lại ZIP source và cả ba notebook cùng lúc:
 
 ```powershell
 python scripts/build_30seed_notebooks.py
@@ -106,6 +129,8 @@ python scripts/build_30seed_notebooks.py
 
 Không trộn kết quả trước và sau khi thay snapshot. Không dùng chế độ `run_poga.py`
 cũ không có `--benchmark_seeds` cho bộ 30 seed này: chế độ cũ dùng B0 tham chiếu cố định và CNN seed 42.
+File source ZIP chỉ chứa các file Python cần thiết, không đóng gói `.git`, dataset ảnh,
+output của lần chạy cũ hay checkpoint. Gửi cùng một ZIP mới cho cả ba người trước khi bắt đầu.
 
 ## 7. Kế hoạch quota 30 giờ/người/tuần
 
@@ -138,6 +163,7 @@ và giới hạn phiên CPU/GPU tối đa 12 giờ. Xem quota thực tế trong 
 | 2 | 5–8 | 15–18 | 25–28 | 23,3 giờ |
 | 3 | 9–10 | 19–20 | 29–30 | 11,6 giờ |
 
+Hai đợt phân công 5 seed/người không đồng nghĩa mỗi đợt chắc chắn vừa một tuần.
 Theo ước tính này, 5 seed đã khoảng 29,1 giờ, không đủ dự phòng tải model, trích đặc trưng,
 đánh giá, nén ZIP và thời gian GPU bật nhưng nhàn rỗi. Nếu seed đầu thực tế nhanh hơn đáng kể,
 có thể điều chỉnh và hoàn tất trong hai tuần; không giảm epoch hay bỏ seed ở một người để ép quota.
