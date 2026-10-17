@@ -24,8 +24,13 @@ assert torch.cuda.is_available(), "Bật GPU trong Notebook options trước khi
 # Mã nguồn và cache ở /kaggle/temp; /kaggle/working chỉ dành cho kết quả.
 input_root = Path('/kaggle/input')
 
+def files_under(directory):
+    for root, _, names in os.walk(directory, followlinks=True):
+        for name in names:
+            yield Path(root) / name
+
 def source_roots(directory):
-    return sorted(path.parent for path in directory.rglob('run_poga.py') if (path.parent / 'train.py').is_file())
+    return sorted(path.parent for path in files_under(directory) if path.name == 'run_poga.py' and (path.parent / 'train.py').is_file())
 
 def contains_source(path):
     try:
@@ -42,7 +47,7 @@ if SOURCE_ZIP:
     archives = [] if selected.is_dir() else [selected]
     roots = source_roots(selected) if selected.is_dir() else []
 else:
-    archives = [path for path in sorted(input_root.rglob('*.zip')) if contains_source(path)]
+    archives = [path for path in sorted(files_under(input_root)) if path.suffix.lower() == '.zip' and contains_source(path)]
     roots = source_roots(input_root) if not archives else []
 if archives:
     if len(archives) != 1:
@@ -63,7 +68,7 @@ if len(roots) != 1:
 source_root = roots[0]
 print('Source được chọn:', source_root)
 sources = {path.relative_to(source_root).as_posix(): path.read_text(encoding='utf-8')
-           for path in sorted(source_root.rglob('*.py')) if '__pycache__' not in path.parts}
+           for path in sorted(files_under(source_root)) if path.suffix == '.py' and '__pycache__' not in path.parts}
 assert 'scripts/merge_seed_results.py' in sources and '--benchmark_seeds' in sources['run_poga.py'], 'Source ZIP cũ; hãy upload ZIP 30seeds mới.'
 SOURCE_SHA = hashlib.sha256(json.dumps(sources, ensure_ascii=False, sort_keys=True).encode('utf-8')).hexdigest()
 WORK_DIR = Path('/kaggle/temp') / f'KhoaLuanDatasetReduction_{SOURCE_SHA[:16]}'
@@ -77,7 +82,7 @@ from scripts.merge_seed_results import read_seed, METHODS, MODELS
 
 matches = {'seg_train': [], 'seg_test': []}
 classes = {'buildings', 'forest', 'glacier', 'mountain', 'sea', 'street'}
-for root, dirs, _ in os.walk('/kaggle/input'):
+for root, dirs, _ in os.walk('/kaggle/input', followlinks=True):
     if classes.issubset(dirs):
         for kind in matches:
             if kind in Path(root).parts:
@@ -90,7 +95,7 @@ print('GPU:', VERSIONS, '\\nSource SHA256:', SOURCE_SHA)
 print('Train:', TRAIN_DIR, '\\nTest:', TEST_DIR)
 '''
 
-RUN = '''import csv, subprocess, time, zipfile
+RUN = '''import os, csv, subprocess, time, zipfile
 
 OUTPUT_ROOT = Path(f'/kaggle/working/person{PERSON}')
 OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
@@ -111,7 +116,9 @@ def archive_seed(seed):
     print('ZIP:', archive)
 
 # Thêm các ZIP personN_seedS.zip đã tải từ phiên trước vào Kaggle Input.
-for archive in sorted(Path('/kaggle/input').rglob(f'person{PERSON}_seed*.zip')):
+input_archives = [Path(root) / name for root, _, names in os.walk('/kaggle/input', followlinks=True)
+                  for name in names if Path(name).match(f'person{PERSON}_seed*.zip')]
+for archive in sorted(input_archives):
     with zipfile.ZipFile(archive) as saved:
         for member in saved.infolist():
             target = (OUTPUT_ROOT / member.filename).resolve()

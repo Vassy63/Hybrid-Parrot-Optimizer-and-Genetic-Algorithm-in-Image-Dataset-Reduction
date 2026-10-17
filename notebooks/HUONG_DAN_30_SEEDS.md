@@ -72,6 +72,7 @@ PASS trên CPU không xác nhận CUDA/VRAM, thời gian chạy toàn dataset, q
    Ô `SOURCE_ZIP = ''` tự tìm ZIP chứa `run_poga.py` và `train.py`, kể cả khi ZIP bị đổi tên hoặc có thư mục bọc ngoài.
    Nếu có nhiều bộ source, điền `SOURCE_ZIP` là đường dẫn cụ thể tới ZIP hoặc thư mục đã giải nén trong `/kaggle/input/...`.
    Nếu không tìm thấy, notebook liệt kê các Input hiện có để kiểm tra dataset source đã được Add Input hay chưa.
+   Bộ tìm source, dataset ảnh và ZIP khôi phục dùng `os.walk(..., followlinks=True)` để nhận cả thư mục liên kết bên dưới `/kaggle/input/datasets`.
 5. Ô cấu hình có sẵn `PERSON` và `SEEDS`. Mặc định chọn 5 seed đầu cho đợt 1.
    Nếu muốn chạy từng seed, đặt `SEEDS_TO_RUN = [1]` cho người 1, hoặc seed thuộc phần của mình.
 6. Chạy ô cấu hình, ô chuẩn bị, rồi ô benchmark. Source ZIP bắt buộc có `run_poga.py` hỗ trợ `--benchmark_seeds`

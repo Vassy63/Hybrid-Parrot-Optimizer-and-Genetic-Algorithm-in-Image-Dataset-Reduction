@@ -128,8 +128,15 @@ class DistributedNotebooksTest(unittest.TestCase):
             source = source.replace('/kaggle/input', inputs.as_posix()).replace('/kaggle/temp', (work/'runtime').as_posix())
             namespace = {'SOURCE_ZIP': ''}
             original_cwd = os.getcwd()
+            original_walk = os.walk
+
+            def walk_links(directory, *args, **kwargs):
+                if Path(directory).resolve().is_relative_to(inputs.resolve()):
+                    self.assertTrue(kwargs.get('followlinks'), 'Kaggle Input traversal must follow directory links')
+                return original_walk(directory, *args, **kwargs)
+
             try:
-                with patch.dict(sys.modules, torch=fake_torch), patch.object(sys, 'path', sys.path[:]), patch.dict(os.environ), contextlib.redirect_stdout(io.StringIO()):
+                with patch.dict(sys.modules, torch=fake_torch), patch.object(sys, 'path', sys.path[:]), patch.dict(os.environ), patch('os.walk', side_effect=walk_links), contextlib.redirect_stdout(io.StringIO()):
                     exec(source, namespace)
                     self.assertTrue((namespace['WORK_DIR'] / 'run_poga.py').is_file())
                     self.assertEqual(Path(namespace['TRAIN_DIR']).parts[-2:], ('seg_train', 'seg_train'))
