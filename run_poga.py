@@ -143,6 +143,8 @@ def parse_args():
     parser.add_argument("--batch_size", type=int, default=64, help="Batch size huấn luyện CNN")
     parser.add_argument("--seeds", type=int, nargs="+", default=[42, 123, 456],
                         help="Danh sách hạt giống thực nghiệm (ví dụ: --seeds 42 123 456 789 2026)")
+    parser.add_argument("--benchmark_seeds", action="store_true",
+                        help="Huấn luyện B0 thực tế cho từng seed; CNN dùng seed thực nghiệm, split giữ ở 42")
     parser.add_argument("--num_samples", type=int, default=None,
                         help="Giới hạn số lượng ảnh để kiểm tra nhanh (Fast / Mini-test mode)")
     parser.add_argument("--skip_eval", action="store_true",
@@ -235,11 +237,27 @@ def main():
     experiment_rows = []
     subset_sizes = []
 
+    # Split giữ ở 42 để mask đặc trưng và tập con luôn cùng thứ tự ảnh.
+    measured_baselines = {}
     # Ghi nhận mốc chuẩn Full Dataset (B0) vào bảng kết quả
     if not args.skip_eval:
         for m_name in models_to_eval:
             b0 = FULL_DATASET_BASELINE[m_name]
             for r_idx, s in enumerate(args.seeds, 1):
+                if args.benchmark_seeds:
+                    full_cfg = copy.copy(base_cfg)
+                    full_cfg.model_name = m_name
+                    full_cfg.run_id = f"full_seed{s}_{m_name}"
+                    full_cfg.run_dir = os.path.join(session_dir, "model_runs", f"full_seed{s}", m_name)
+                    loaders = create_dataloaders(full_cfg)
+                    set_seed(s)
+                    res = train_single_model(full_cfg, *loaders)
+                    metrics = res["test_metrics"]
+                    b0 = dict(test_acc=res["test_acc"], val_acc=res["best_val_acc"],
+                              macro_precision=metrics["macro_precision"],
+                              macro_recall=metrics["macro_recall"], macro_f1=res["macro_f1"],
+                              time_s=res["total_time_seconds"])
+                    measured_baselines[(m_name, s)] = b0
                 experiment_rows.append({
                     "Method": "Full Dataset (B0)", "Run": r_idx, "Seed": s, "Model": m_name,
                     "Subset_Size_M": N, "DR_Percent": 0.0,
@@ -280,11 +298,11 @@ def main():
         train_loader, val_loader, test_loader, classes = create_dataloaders(sub_cfg)
 
         for m_name in models_to_eval:
-            set_seed(42)
+            set_seed(seed_val if args.benchmark_seeds else 42)
             m_cfg = copy.copy(sub_cfg)
             m_cfg.model_name = m_name
             m_cfg.run_id = f"{m_key}_seed{seed_val}_{m_name}"
-            m_cfg.run_dir = os.path.join(session_dir, "model_runs", f"{m_key}_seed{seed_val}")
+            m_cfg.run_dir = os.path.join(session_dir, "model_runs", f"{m_key}_seed{seed_val}", m_name)
             os.makedirs(m_cfg.run_dir, exist_ok=True)
 
             res = train_single_model(m_cfg, train_loader, val_loader, test_loader, classes)
@@ -296,7 +314,7 @@ def main():
             f1 = float(res["macro_f1"])
             t_train = float(res["total_time_seconds"])
 
-            b0 = FULL_DATASET_BASELINE[m_name]
+            b0 = measured_baselines[(m_name, seed_val)] if args.benchmark_seeds else FULL_DATASET_BASELINE[m_name]
             arr = round((test_acc / max(1e-8, b0["test_acc"])) * 100.0, 2)
             delta_acc = round(test_acc - b0["test_acc"], 2)
             speedup = round(b0["time_s"] / max(1e-4, t_train), 2)
