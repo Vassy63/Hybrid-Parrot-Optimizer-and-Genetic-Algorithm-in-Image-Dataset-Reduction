@@ -43,6 +43,7 @@ class FitnessConfig:
     w_cov: float = 0.45
     w_bal: float = 0.20
     w_com: float = 0.20
+    target_ratio: Optional[float] = None
 
 @dataclass
 class POGAConfig:

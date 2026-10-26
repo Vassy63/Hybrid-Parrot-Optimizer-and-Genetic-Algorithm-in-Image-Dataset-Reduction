@@ -149,6 +149,8 @@ def parse_args():
                         help="Giới hạn số lượng ảnh để kiểm tra nhanh (Fast / Mini-test mode)")
     parser.add_argument("--skip_eval", action="store_true",
                         help="Chỉ chạy tối ưu hóa PO-GA và xuất tập con + biểu đồ hội tụ, bỏ qua bước huấn luyện CNN")
+    parser.add_argument("--target_ratio", type=float, default=None,
+                        help="Tỷ lệ giữ lại ảnh mong muốn (ví dụ: 0.3 là giữ 30%, 0.5 là giữ 50%). Mặc định: None (tự do)")
     parser.add_argument("--train_dir", type=str, default="data/seg_train/seg_train")
     parser.add_argument("--test_dir", type=str, default="data/seg_test/seg_test")
     parser.add_argument("--save_dir", type=str, default="outputs")
@@ -182,6 +184,13 @@ def main():
     poga_cfg.total_iterations = args.total_iterations
     poga_cfg.phase_size = args.phase_size
     poga_cfg.exchange_k = args.exchange_k
+
+    if args.target_ratio is not None:
+        if not (0.0 < args.target_ratio < 1.0):
+            raise ValueError(f"target_ratio phải thuộc khoảng (0, 1), nhận: {args.target_ratio}")
+        poga_cfg.fitness.target_ratio = args.target_ratio
+        poga_cfg.ga.init_ratio = args.target_ratio
+        print(f"[*] Đã kích hoạt chế độ nén mục tiêu: target_ratio = {args.target_ratio*100:.1f}% (giữ lại ~{args.target_ratio*100:.1f}%, nén {(1-args.target_ratio)*100:.1f}%)")
 
     print("=" * 90)
     print("KHUNG THỰC NGHIỆM HYBRID PO-GA RÚT GỌN DỮ LIỆU & ĐÁNH GIÁ CNN (CNTT-KLCN140)")
@@ -272,7 +281,7 @@ def main():
     def evaluate_and_record(method_label: str, m_key: str, run_idx: int, seed_val: int, best_sol: np.ndarray, opt_time: float):
         M = int(np.sum(best_sol))
         dr_pct = round((1.0 - M / N) * 100.0, 2)
-        raw_f = compute_raw_fitness(best_sol, dist_matrix, labels, poga_cfg.num_classes)
+        raw_f = compute_raw_fitness(best_sol, dist_matrix, labels, poga_cfg.num_classes, target_ratio=poga_cfg.fitness.target_ratio)
         fit_tot = fitness(best_sol, dist_matrix, labels, poga_cfg.num_classes, poga_cfg.fitness)
 
         subset_file = os.path.join(subsets_dir, f"subset_{m_key}_seed{seed_val}.npy")
@@ -374,7 +383,10 @@ def main():
 
     # 4. Chạy các Baseline lấy mẫu ngẫu nhiên (B1: Random Selection, B2: Stratified Random)
     if run_baselines:
-        target_m = int(np.median(subset_sizes)) if subset_sizes else int(round(N * poga_cfg.ga.init_ratio))
+        if args.target_ratio is not None:
+            target_m = int(round(N * args.target_ratio))
+        else:
+            target_m = int(np.median(subset_sizes)) if subset_sizes else int(round(N * poga_cfg.ga.init_ratio))
         b_map = {}
         if args.method in ("all", "random"):
             b_map["Random Selection (B1)"] = ("random", lambda s: random_selection(N, target_m, seed=s))

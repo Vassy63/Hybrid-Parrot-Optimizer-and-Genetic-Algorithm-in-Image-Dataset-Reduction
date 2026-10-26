@@ -77,18 +77,22 @@ def compute_balance(labels: np.ndarray, selected_idx: np.ndarray, num_classes: i
     deviation = np.sqrt(np.mean((sel_ratios - orig_ratios) ** 2))
     return float(1.0 - deviation)
 
-def compute_compression(solution_vector: np.ndarray, M: int = None) -> float:
-    """F_Com in [0, 1]: Tỷ lệ nén dữ liệu (1 - M/N)."""
+def compute_compression(solution_vector: np.ndarray, M: int = None, target_ratio: float = None) -> float:
+    """F_Com in [0, 1]: Tỷ lệ nén dữ liệu. Nếu có target_ratio thì tính theo độ tiệm cận mục tiêu."""
     if M is None:
         M = int(np.sum(solution_vector))
-    return float(1.0 - (M / len(solution_vector)))
+    ratio = M / len(solution_vector)
+    if target_ratio is not None and 0.0 < target_ratio < 1.0:
+        return float(max(0.0, 1.0 - abs(ratio - target_ratio)))
+    return float(1.0 - ratio)
 
 def compute_raw_fitness(
     solution: np.ndarray, 
     dist_matrix: np.ndarray, 
     labels: np.ndarray, 
     num_classes: int,
-    selected_idx: np.ndarray = None
+    selected_idx: np.ndarray = None,
+    target_ratio: float = None
 ) -> np.ndarray:
     """Trả về 4 thành phần [Div, Cov, Bal, Com] đều thuộc [0, 1]."""
     if selected_idx is None:
@@ -102,7 +106,7 @@ def compute_raw_fitness(
     div = float(torch.index_select(cols, 0, idx_pt).sum().item() / (M * (M - 1)))
     cov = float(max(0.0, 1.0 - cols.min(dim=1)[0].mean().item()))
     bal = compute_balance(labels, selected_idx, num_classes)
-    com = float(1.0 - (M / len(solution)))
+    com = compute_compression(solution, M=M, target_ratio=target_ratio)
     return np.array([div, cov, bal, com], dtype=np.float64)
 
 def fitness(solution: np.ndarray, dist_matrix: np.ndarray, labels: np.ndarray, num_classes: int, weights) -> float:
@@ -110,7 +114,8 @@ def fitness(solution: np.ndarray, dist_matrix: np.ndarray, labels: np.ndarray, n
     selected_idx = np.where(solution == 1)[0]
     if len(selected_idx) < 2:
         return 0.0
-    raw = compute_raw_fitness(solution, dist_matrix, labels, num_classes, selected_idx=selected_idx)
+    t_ratio = getattr(weights, 'target_ratio', None)
+    raw = compute_raw_fitness(solution, dist_matrix, labels, num_classes, selected_idx=selected_idx, target_ratio=t_ratio)
     return float(raw[0] * weights.w_div + raw[1] * weights.w_cov + raw[2] * weights.w_bal + raw[3] * weights.w_com)
 
 def repair_solution(solution: np.ndarray) -> np.ndarray:
