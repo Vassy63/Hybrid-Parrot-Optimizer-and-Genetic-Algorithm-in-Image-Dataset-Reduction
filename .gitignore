@@ -3,6 +3,8 @@ data/seg_train/
 data/seg_test/
 data/seg_pred/
 outputs/
+RUN30SEEDS/
+*.zip
 graphify-out/
 __pycache__/
 *.pyc

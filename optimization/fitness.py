@@ -58,26 +58,41 @@ def compute_coverage(dist_matrix: np.ndarray, selected_idx: np.ndarray) -> float
     avg_min_dist = torch.mean(min_dists).item()
     return float(max(0.0, 1.0 - avg_min_dist))
 
+_LABEL_RATIOS_CACHE = {}
+
+def _get_orig_ratios(labels: np.ndarray, num_classes: int) -> np.ndarray:
+    key = id(labels)
+    if key not in _LABEL_RATIOS_CACHE:
+        _LABEL_RATIOS_CACHE.clear()
+        _LABEL_RATIOS_CACHE[key] = np.bincount(labels, minlength=num_classes) / len(labels)
+    return _LABEL_RATIOS_CACHE[key]
+
 def compute_balance(labels: np.ndarray, selected_idx: np.ndarray, num_classes: int) -> float:
     """F_Bal in [0, 1]: Độ cân bằng phân bố lớp so với tập gốc."""
-    if len(selected_idx) == 0:
-        return 0.0
-    N = len(labels)
     M = len(selected_idx)
-    orig_ratios = np.bincount(labels, minlength=num_classes) / N
+    if M == 0:
+        return 0.0
+    orig_ratios = _get_orig_ratios(labels, num_classes)
     sel_ratios = np.bincount(labels[selected_idx], minlength=num_classes) / M
     deviation = np.sqrt(np.mean((sel_ratios - orig_ratios) ** 2))
     return float(1.0 - deviation)
 
-def compute_compression(solution_vector: np.ndarray) -> float:
+def compute_compression(solution_vector: np.ndarray, M: int = None) -> float:
     """F_Com in [0, 1]: Tỷ lệ nén dữ liệu (1 - M/N)."""
-    M = np.sum(solution_vector)
-    N = len(solution_vector)
-    return float(1.0 - (M / N))
+    if M is None:
+        M = int(np.sum(solution_vector))
+    return float(1.0 - (M / len(solution_vector)))
 
-def compute_raw_fitness(solution: np.ndarray, dist_matrix: np.ndarray, labels: np.ndarray, num_classes: int) -> np.ndarray:
+def compute_raw_fitness(
+    solution: np.ndarray, 
+    dist_matrix: np.ndarray, 
+    labels: np.ndarray, 
+    num_classes: int,
+    selected_idx: np.ndarray = None
+) -> np.ndarray:
     """Trả về 4 thành phần [Div, Cov, Bal, Com] đều thuộc [0, 1]."""
-    selected_idx = np.where(solution == 1)[0]
+    if selected_idx is None:
+        selected_idx = np.where(solution == 1)[0]
     M = len(selected_idx)
     if M < 2:
         return np.array([0.0, 0.0, 0.0, 0.0], dtype=np.float64)
@@ -87,7 +102,7 @@ def compute_raw_fitness(solution: np.ndarray, dist_matrix: np.ndarray, labels: n
     div = float(torch.index_select(cols, 0, idx_pt).sum().item() / (M * (M - 1)))
     cov = float(max(0.0, 1.0 - cols.min(dim=1)[0].mean().item()))
     bal = compute_balance(labels, selected_idx, num_classes)
-    com = compute_compression(solution)
+    com = float(1.0 - (M / len(solution)))
     return np.array([div, cov, bal, com], dtype=np.float64)
 
 def fitness(solution: np.ndarray, dist_matrix: np.ndarray, labels: np.ndarray, num_classes: int, weights) -> float:
@@ -95,9 +110,8 @@ def fitness(solution: np.ndarray, dist_matrix: np.ndarray, labels: np.ndarray, n
     selected_idx = np.where(solution == 1)[0]
     if len(selected_idx) < 2:
         return 0.0
-    raw = compute_raw_fitness(solution, dist_matrix, labels, num_classes)
-    w = np.array([weights.w_div, weights.w_cov, weights.w_bal, weights.w_com], dtype=np.float64)
-    return float(np.sum(raw * w))
+    raw = compute_raw_fitness(solution, dist_matrix, labels, num_classes, selected_idx=selected_idx)
+    return float(raw[0] * weights.w_div + raw[1] * weights.w_cov + raw[2] * weights.w_bal + raw[3] * weights.w_com)
 
 def repair_solution(solution: np.ndarray) -> np.ndarray:
     """Đảm bảo tập con có ít nhất 2 mẫu (M >= 2) để tính được F_Div."""

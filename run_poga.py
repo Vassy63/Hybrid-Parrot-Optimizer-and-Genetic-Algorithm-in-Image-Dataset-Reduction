@@ -139,7 +139,7 @@ def parse_args():
     parser.add_argument("--total_iterations", type=int, default=100, help="Tổng số thế hệ/vòng lặp (mặc định: 100 -> 2,000 FEs)")
     parser.add_argument("--phase_size", type=int, default=10, help="Độ dài mỗi pha xen kẽ S1/S2 hoặc trao đổi C1")
     parser.add_argument("--exchange_k", type=int, default=3, help="Số cá thể ưu tú trao đổi trong C1")
-    parser.add_argument("--epochs", type=int, default=5, help="Số epochs huấn luyện CNN đánh giá tập con")
+    parser.add_argument("--epochs", type=int, default=20, help="Số epochs huấn luyện CNN đánh giá tập con")
     parser.add_argument("--batch_size", type=int, default=64, help="Batch size huấn luyện CNN")
     parser.add_argument("--seeds", type=int, nargs="+", default=[42, 123, 456],
                         help="Danh sách hạt giống thực nghiệm (ví dụ: --seeds 42 123 456 789 2026)")
@@ -188,7 +188,8 @@ def main():
     print(f"Thư mục phiên chạy : {session_dir}")
     print(f"Thiết bị           : {base_cfg.device}")
     print(f"Phương pháp        : {args.method.upper()} | Models: {args.model.upper()} | Seeds: {args.seeds}")
-    print("Hàm Fitness        : F = 0.1*Div + 0.3*Cov + 0.2*Bal + 0.4*Com (4 thành phần nguyên bản)")
+    fit_w = poga_cfg.fitness
+    print(f"Hàm Fitness        : F = {fit_w.w_div}*Div + {fit_w.w_cov}*Cov + {fit_w.w_bal}*Bal + {fit_w.w_com}*Com (Đa tiêu chí ưu tiên Coverage)")
     print("=" * 90)
 
     # 1. Trích xuất đặc trưng ResNet-18 (512 chiều) và chuẩn hóa ma trận khoảng cách Cosine

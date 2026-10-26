@@ -100,23 +100,27 @@ def create_dataloaders(config: BaselineConfig) -> Tuple[DataLoader, Optional[Dat
             test_subset = test_dataset
         print(f"[*] Tập kiểm thử độc lập (Test Set): {len(test_subset)} ảnh")
 
+    pin_mem = torch.cuda.is_available() and config.device == "cuda"
     train_loader = DataLoader(
         train_subset,
         batch_size=config.batch_size,
         shuffle=True,
-        num_workers=0
+        num_workers=0,
+        pin_memory=pin_mem
     )
     val_loader = DataLoader(
         val_subset,
         batch_size=config.batch_size,
         shuffle=False,
-        num_workers=0
+        num_workers=0,
+        pin_memory=pin_mem
     )
     test_loader = DataLoader(
         test_subset,
         batch_size=config.batch_size,
         shuffle=False,
-        num_workers=0
+        num_workers=0,
+        pin_memory=pin_mem
     ) if test_subset is not None else None
 
     return train_loader, val_loader, test_loader, classes

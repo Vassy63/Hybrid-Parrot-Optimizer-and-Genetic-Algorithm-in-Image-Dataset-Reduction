@@ -66,6 +66,8 @@ class GeneticAlgorithm:
         
         history = []
         best_overall_fitness = float(np.max(fitness_scores))
+        best_sol = population[np.argmax(fitness_scores)].copy()
+        cached_raw_fit = compute_raw_fitness(best_sol, self.dist_matrix, self.labels, self.num_classes)
         stagnation_count = 0
         
         for step in tqdm(range(n_steps), desc="GA Generations", leave=False):
@@ -91,22 +93,22 @@ class GeneticAlgorithm:
             
             best_idx = np.argmax(fitness_scores)
             best_fitness = fitness_scores[best_idx]
-            best_sol = population[best_idx]
-            raw_fit = compute_raw_fitness(best_sol, self.dist_matrix, self.labels, self.num_classes)
-            
-            history.append({
-                'total': float(best_fitness),
-                'div': float(raw_fit[0]),
-                'cov': float(raw_fit[1]),
-                'bal': float(raw_fit[2]),
-                'com': float(raw_fit[3])
-            })
             
             if best_fitness > best_overall_fitness + 1e-6:
                 best_overall_fitness = best_fitness
                 stagnation_count = 0
+                best_sol = population[best_idx].copy()
+                cached_raw_fit = compute_raw_fitness(best_sol, self.dist_matrix, self.labels, self.num_classes)
             else:
                 stagnation_count += 1
+            
+            history.append({
+                'total': float(best_fitness),
+                'div': float(cached_raw_fit[0]),
+                'cov': float(cached_raw_fit[1]),
+                'bal': float(cached_raw_fit[2]),
+                'com': float(cached_raw_fit[3])
+            })
                 
             if not disable_early_stop and stagnation_count >= getattr(self.config, 'early_stopping_patience', 15):
                 break

@@ -69,7 +69,7 @@ class BaselineConfig:
     # Model & Optimization
     image_size: Tuple[int, int] = (224, 224)
     batch_size: int = 64
-    epochs: int = 5
+    epochs: int = 20
     lr: float = 1e-3
     weight_decay: float = 1e-4
     fine_tune: bool = False

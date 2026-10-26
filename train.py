@@ -44,7 +44,7 @@ def parse_args():
                         help="Thư mục gốc lưu các runs")
     parser.add_argument("--run_name", type=str, default=None,
                         help="Tên định danh tùy chọn cho lần chạy")
-    parser.add_argument("--epochs", type=int, default=5, help="Số epochs huấn luyện")
+    parser.add_argument("--epochs", type=int, default=20, help="Số epochs huấn luyện")
     parser.add_argument("--batch_size", type=int, default=64, help="Kích thước batch (mặc định: 64)")
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
     parser.add_argument("--weight_decay", type=float, default=1e-4, help="Weight decay")

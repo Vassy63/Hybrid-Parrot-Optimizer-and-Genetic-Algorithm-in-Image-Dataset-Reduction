@@ -96,6 +96,7 @@ class ParrotOptimizer:
         best_idx = np.argmax(fitness_scores)
         gbest_pos = population[best_idx].copy()
         gbest_fitness = fitness_scores[best_idx]
+        cached_raw_fit = compute_raw_fitness(gbest_pos, self.dist_matrix, self.labels, self.num_classes)
         
         history = []
         no_improve_count = 0
@@ -115,16 +116,16 @@ class ParrotOptimizer:
                 gbest_pos = population[current_best_idx].copy()
                 gbest_fitness = fitness_scores[current_best_idx]
                 no_improve_count = 0
+                cached_raw_fit = compute_raw_fitness(gbest_pos, self.dist_matrix, self.labels, self.num_classes)
             else:
                 no_improve_count += 1
                 
-            raw_fit = compute_raw_fitness(gbest_pos, self.dist_matrix, self.labels, self.num_classes)
             history.append({
                 'total': float(gbest_fitness),
-                'div': float(raw_fit[0]),
-                'cov': float(raw_fit[1]),
-                'bal': float(raw_fit[2]),
-                'com': float(raw_fit[3])
+                'div': float(cached_raw_fit[0]),
+                'cov': float(cached_raw_fit[1]),
+                'bal': float(cached_raw_fit[2]),
+                'com': float(cached_raw_fit[3])
             })
             
             if not disable_early_stop and no_improve_count >= self.config.early_stopping_patience:

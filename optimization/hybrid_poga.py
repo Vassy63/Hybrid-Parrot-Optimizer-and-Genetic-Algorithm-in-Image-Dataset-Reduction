@@ -163,9 +163,10 @@ def run_c1_cooperative_exchange(config, dist_matrix, labels, num_classes, initia
         s_idx = np.argsort(unique_fits)[::-1]
         top_pop = unique_pop[s_idx[:len(pop)]].copy()
         top_fits = unique_fits[s_idx[:len(pop)]].copy()
-        while len(top_pop) < len(pop):
-            top_pop = np.vstack([top_pop, top_pop[0]])
-            top_fits = np.append(top_fits, top_fits[0])
+        needed = len(pop) - len(top_pop)
+        if needed > 0:
+            top_pop = np.vstack([top_pop, np.tile(top_pop[0], (needed, 1))])
+            top_fits = np.append(top_fits, np.full(needed, top_fits[0]))
         pop_ga, fits_ga = top_pop.copy(), top_fits.copy()
         pop_po, fits_po = top_pop.copy(), top_fits.copy()
 

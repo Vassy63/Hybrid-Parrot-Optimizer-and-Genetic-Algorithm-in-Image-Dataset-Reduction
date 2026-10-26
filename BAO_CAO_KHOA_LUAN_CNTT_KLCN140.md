@@ -127,7 +127,7 @@ Với mỗi cá thể hợp lệ $X$ có tập mẫu được chọn $S$ ($|S| =
 
 **Hàm Fitness tổng hợp bốn thành phần**:
 $$F(X) = \alpha \cdot \text{Div}(X) + \beta \cdot \text{Cov}(X) + \gamma \cdot \text{Bal}(X) + \delta \cdot \text{Com}(X)$$
-với bộ trọng số chuẩn hóa $(\alpha, \beta, \gamma, \delta) = (0,10;\; 0,30;\; 0,20;\; 0,40)$ thỏa mãn $\alpha + \beta + \gamma + \delta = 1$.
+với bộ trọng số chuẩn hóa $(\alpha, \beta, \gamma, \delta) = (0,15;\; 0,45;\; 0,20;\; 0,20)$ thỏa mãn $\alpha + \beta + \gamma + \delta = 1$. Việc thiết lập tỷ lệ trọng số giữa độ nén và độ bao phủ $\frac{\delta}{\beta} = \frac{0,20}{0,45} \approx 0,444$ giúp cân bằng đạo hàm riêng $\frac{\partial F}{\partial (M/N)} = 0$ tại vùng rút gọn tự nhiên $\text{DR} \in [72\%, 76\%]$ ($M^* \approx 2.750 - 3.050$ ảnh) mà không cần áp đặt ràng buộc kích thước cứng.
 
 ### 3.4. Ví dụ Minh họa Tính toán Cụ thể (Illustrative Example)
 
@@ -148,16 +148,16 @@ Xét hai cá thể ứng viên cùng chọn $M = 2$ ảnh (rút gọn $66,67\%$)
   * Khoảng cách nhỏ nhất từ 6 ảnh tới $\{I_1, I_2\}$ lần lượt là: $[0,00;\; 0,00;\; 0,15;\; 0,80;\; 0,88;\; 0,85]$, trung bình bằng $0,4467 \Rightarrow \text{Cov}(X^{(A)}) = 1 - 0,4467 = 0,5533$.
   * Phân bố lớp tập con: $M_0/M = 1,00$, $M_1/M = 0,00 \Rightarrow \text{Bal}(X^{(A)}) = 1 - \sqrt{\frac{(1-0,5)^2 + (0-0,5)^2}{2}} = 1 - 0,5000 = 0,5000$.
   * $\text{Com}(X^{(A)}) = 1 - \frac{2}{6} = 0,6667$.
-  * Điểm thích nghi tổng hợp: $F(X^{(A)}) = 0,1(0,1000) + 0,3(0,5533) + 0,2(0,5000) + 0,4(0,6667) = \mathbf{0,5427}$.
+  * Điểm thích nghi tổng hợp: $F(X^{(A)}) = 0,15(0,1000) + 0,45(0,5533) + 0,20(0,5000) + 0,20(0,6667) = \mathbf{0,4973}$.
 
 * **Cá thể $X^{(B)} = (1, 0, 0, 0, 1, 0)$**: Chọn 1 ảnh Lớp 0 ($I_1$) và 1 ảnh Lớp 1 ($I_5$):
   * $\text{Div}(X^{(B)}) = \hat{d}_{1,5} = 0,9000$ (hai ảnh đại diện cho hai cảnh quan khác biệt rõ rệt).
   * Khoảng cách nhỏ nhất từ 6 ảnh tới $\{I_1, I_5\}$ lần lượt là: $[0,00;\; 0,10;\; 0,20;\; 0,12;\; 0,00;\; 0,10]$, trung bình chỉ bằng $0,0867 \Rightarrow \text{Cov}(X^{(B)}) = 1 - 0,0867 = 0,9133$ (bao phủ tốt cả hai cụm lớp).
   * Phân bố lớp tập con: $M_0/M = 0,50$, $M_1/M = 0,50 \Rightarrow \text{Bal}(X^{(B)}) = 1 - 0 = 1,0000$ (cân bằng tuyệt đối).
   * $\text{Com}(X^{(B)}) = 1 - \frac{2}{6} = 0,6667$.
-  * Điểm thích nghi tổng hợp: $F(X^{(B)}) = 0,1(0,9000) + 0,3(0,9133) + 0,2(1,0000) + 0,4(0,6667) = \mathbf{0,8307}$.
+  * Điểm thích nghi tổng hợp: $F(X^{(B)}) = 0,15(0,9000) + 0,45(0,9133) + 0,20(1,0000) + 0,20(0,6667) = \mathbf{0,8793}$.
 
-Ví dụ trên chứng minh hàm mục tiêu đánh giá chính xác chất lượng đại diện: cùng giữ lại 2 bức ảnh nhưng cá thể $X^{(B)}$ có độ bao phủ, đa dạng và cân bằng lớp vượt trội được chấm điểm $0,8307$, cao hơn hẳn cá thể lệch lớp $X^{(A)}$ ($0,5427$).
+Ví dụ trên chứng minh hàm mục tiêu đánh giá chính xác chất lượng đại diện: cùng giữ lại 2 bức ảnh nhưng cá thể $X^{(B)}$ có độ bao phủ, đa dạng và cân bằng lớp vượt trội được chấm điểm $0,8793$, cao hơn hẳn cá thể lệch lớp $X^{(A)}$ ($0,4973$).
 
 ---
 
@@ -166,12 +166,12 @@ Ví dụ trên chứng minh hàm mục tiêu đánh giá chính xác chất lư�
 ### 4.1. Giải thuật Di truyền cho Lựa chọn Mẫu Nhị phân (Binary Genetic Algorithm)
 
 Giải thuật Di truyền (GA) vận hành trực tiếp trên quần thể các vector nhị phân $\{X_1, X_2, \dots, X_P\}$. Tại mỗi thế hệ $t \in \{1, \dots, T\}$, GA thực hiện tuần tự bốn bước:
-1. **Bảo tồn tinh hoa (Elitism)**: Sắp xếp quần thể theo chiều giảm dần của hàm thích nghi $F(X)$ và sao chép nguyên trạng $E$ cá thể đứng đầu sang quần thể thế hệ kế tiếp.
+1. **Bảo tồn tinh hoa (Elitism)**: Sắp xếp quần thể theo chiều giảm dần của hàm thích nghi $F(X)$ và sao chép nguyên trạng $E = 5$ cá thể đứng đầu sang quần thể thế hệ kế tiếp.
 2. **Chọn lọc giải đấu (Tournament Selection)**: Để chọn mỗi cá thể cha mẹ, lấy ngẫu nhiên $k_{\text{tour}} = 4$ cá thể từ quần thể hiện tại và chọn cá thể có điểm thích nghi cao nhất.
 3. **Lai ghép đồng nhất (Uniform Crossover)**: Với xác suất lai ghép $p_c = 0,8$, hai cá thể cha mẹ $P_1, P_2$ trao đổi từng bit độc lập theo mặt nạ nhị phân ngẫu nhiên $M_{\text{mask}} \in \{0, 1\}^N$ ($\Pr(M_{\text{mask}, j} = 1) = 0,5$) để tạo ra hai cá thể con $C_1, C_2$.
 4. **Đột biến thích nghi giảm dần (Adaptive Bit-Flip Mutation)**: Tỷ lệ đột biến $p_m(t)$ giảm tuyến tính theo số thế hệ để ưu tiên thăm dò ở giai đoạn đầu và ổn định hội tụ ở giai đoạn cuối:
    $$p_m(t) = \max\left(p_{\min},\; p_{\max} - (p_{\max} - p_{\min}) \cdot \frac{t}{T}\right)$$
-   với $p_{\max} = 0,03$ và $p_{\min} = 0,001$. Sau đột biến, cá thể được đưa qua toán tử sửa chữa $\text{Repair}(X, M_{\min}, M_{\max})$.
+   với $p_{\max} = 0,0010$ và $p_{\min} = 0,0002$. Để giữ cân bằng mật độ tập con hiện tại $r = \frac{M}{N}$, xác suất lật bit tại mỗi vị trí được điều chỉnh tương ứng là $p_m(t)\cdot(1-r)$ đối với các bit $x_j = 1$ và $p_m(t)\cdot r$ đối với các bit $x_j = 0$, sau đó đưa qua toán tử sửa chữa $\text{Repair}(X)$.
 
 ### 4.2. Thuật toán Tối ưu hóa Đàn vẹt Truyền thống (Parrot Optimizer - PO) và Bước Ánh xạ Nhị phân
 
@@ -181,7 +181,7 @@ Thuật toán Parrot Optimizer (PO) truyền thống của Lian và cộng sự 
 Ở vòng lặp thứ $t$ (với tổng số vòng lặp tối đa $T_{\max}$), mỗi cá thể vẹt $X_i^t$ chọn ngẫu nhiên một chỉ số hành vi $S_t \in \{1, 2, 3, 4\}$ với xác suất đều nhau ($25\%$ cho mỗi hành vi):
 
 * **Hành vi 1 ($S_t = 1$) — Kiếm ăn (Foraging Behavior)**: Vẹt di chuyển hướng về nguồn thức ăn dựa trên vị trí tốt nhất toàn cục $X_{\text{gbest}}$ và vị trí trung bình của cả đàn $X_{\text{mean}}^t = \frac{1}{P}\sum_{k=1}^P X_k^t$:
-  $$X_i^{\text{cont}} = (X_i^t - X_{\text{gbest}}) \odot \text{Levy}(N) + \text{rand}(0,1) \cdot X_{\text{mean}}^t \cdot \left(1 - \frac{t}{T_{\max}}\right)^{\frac{2t}{T_{\max}}}$$
+  $$X_i^{\text{cont}} = X_i^t + (X_i^t - X_{\text{gbest}}) \odot \text{Levy}(N) + \text{rand}(0,1) \cdot X_{\text{mean}}^t \cdot \left(1 - \frac{t}{T_{\max}}\right)^{\frac{2t}{T_{\max}}}$$
 
 * **Hành vi 2 ($S_t = 2$) — Đậu tại chỗ (Staying Behavior)**: Vẹt bay quanh vị trí của chủ (nghiệm tốt nhất $X_{\text{gbest}}$) và đậu ngẫu nhiên:
   $$X_i^{\text{cont}} = X_i^t + X_{\text{gbest}} \odot \text{Levy}(N) + \mathcal{N}(0, 1) \cdot \left(1 - \frac{t}{T_{\max}}\right) \cdot \mathbf{1}_N$$
@@ -197,24 +197,43 @@ Thuật toán Parrot Optimizer (PO) truyền thống của Lian và cộng sự 
   $$X_i^{\text{cont}} = X_i^t + \text{rand}(0,1) \cos\left(\frac{\pi t}{2 T_{\max}}\right) (X_{\text{gbest}} - X_i^t) - \cos(\theta) \left(\frac{t}{T_{\max}}\right)^{\frac{2}{T_{\max}}} (X_i^t - X_{\text{gbest}})$$
   với $\theta = \text{rand}(0,1) \cdot \pi$. Trong các công thức trên, bước nhảy $\text{Levy}(N)$ tuân theo phân phối Lévy với tham số $\beta = 1,5$ được tính qua công thức Mantegna: $\text{step} = \frac{u}{|v|^{1/\beta}}$ với $u \sim \mathcal{N}(0, \sigma^2)$, $v \sim \mathcal{N}(0, 1)$.
 
-**Bước 2: Ánh xạ vị trí liên tục của PO sang trạng thái chọn ảnh nhị phân (0 hoặc 1)**  
-Vì vị trí $X_i^{\text{cont}}$ sau Bước 1 là số thực (ví dụ: $0,73$ hoặc $-1,25$), trong khi mỗi bức ảnh chỉ có thể được chọn ($1$) hoặc không chọn ($0$), ta cần quy đổi mức độ thay đổi vị trí $\Delta x_{i,d} = x_{i,d}^{\text{cont}} - x_{i,d}^t$ thành xác suất thuộc khoảng $[0, 1)$ bằng hàm $|\tanh(\Delta x_{i,d})|$ [9]:
+**Bước 2: Cơ chế Ánh xạ Nhị phân qua Hàm truyền Hình chữ V (V-shaped Transfer Function)**  
+
+Do vị trí $X_i^{\text{cont}} \in \mathbb{R}^N$ sau Bước 1 là vector số thực liên tục (có thể nhận giá trị dương hoặc âm bất kỳ do bước nhảy Lévy và hàm lượng giác $\cos$), trong khi bài toán rút gọn tập dữ liệu ảnh đòi hỏi nghiệm nhị phân $X_i \in \{0, 1\}^N$ ($1$: chọn ảnh, $0$: loại bỏ ảnh), thuật toán cần một cơ chế chuyển đổi miền từ không gian liên tục sang không gian nhị phân [9].
+
+Trong các thuật toán bầy đàn nhị phân truyền thống, hàm truyền hình chữ S (Sigmoid: $S(x) = \frac{1}{1 + e^{-x}}$) thường được dùng để quy đổi vị trí sang xác suất gán trực tiếp $x_{i,d}^{t+1} = 1$. Tuy nhiên, trên không gian $N = 11.228$ chiều, hàm chữ S có nhược điểm lớn: khi cá thể vẹt đã hội tụ và đứng yên ($\Delta x_{i,d} = 0$), giá trị $S(0) = 0,50$ vẫn tạo ra xác suất $50\%$ gán lại bit thành $1$ hoặc $0$ ngẫu nhiên, làm phá hủy cấu trúc tập con tốt mà cá thể đang nắm giữ (hoặc vừa được pha GA chuyển giao sang).
+
+Để khắc phục triệt để hạn chế này, hệ thống cài đặt **Hàm truyền hình chữ V (V-shaped Transfer Function)** $V(\Delta x) = |\tanh(\Delta x)|$ trong [`optimization/parrot_optimizer.py`](file:///d:/Code/KhoaLuanDatasetReduction/optimization/parrot_optimizer.py#L33-L41). Thay vì ép gán giá trị tuyệt đối $0$ hay $1$, hàm chữ V đo **biên độ dịch chuyển vị trí** $\Delta x_{i,d} = x_{i,d}^{\text{cont}} - x_{i,d}^t$ và quy đổi thành **xác suất đảo trạng thái hiện tại ($P_{\text{flip}}$)**:
 
 ```text
-PO truyền thống (X_cont) 
+PO truyền thống (X_cont ∈ ℝ^N) 
    ──► Độ thay đổi vị trí (ΔX = X_cont - X_current) 
-   ──► Quy đổi sang xác suất [0, 1]: P_flip = |tanh(ΔX)| 
-   ──► Nếu rand() < P_flip thì đảo bit (0 ↔ 1), ngược lại giữ nguyên
+   ──► Hàm truyền chữ V quy đổi sang xác suất [0, 1): V(ΔX) = |tanh(ΔX)| 
+   ──► Nếu rand(0,1) < V(ΔX) thì đảo bit (0 ↔ 1), ngược lại giữ nguyên X_current
 ```
 
-Cụ thể, trạng thái chọn/bỏ của bức ảnh thứ $d$ được quyết định như sau:
+Công thức toán học của hàm truyền chữ V và quy tắc cập nhật trạng thái chọn/bỏ của bức ảnh thứ $d$ được xác định như sau:
+
+$$V(\Delta x_{i,d}) = \left|\tanh(\Delta x_{i,d})\right| = \left|\frac{e^{\Delta x_{i,d}} - e^{-\Delta x_{i,d}}}{e^{\Delta x_{i,d}} + e^{-\Delta x_{i,d}}}\right| \in [0, 1)$$
 
 $$x_{i,d}^{t+1} = \begin{cases} 
-1 - x_{i,d}^t, & \text{nếu } \text{rand}(0,1) < |\tanh(\Delta x_{i,d})| \\
+1 - x_{i,d}^t, & \text{nếu } \text{rand}(0,1) < \left|\tanh(\Delta x_{i,d})\right| \\
 x_{i,d}^t, & \text{ngược lại}
 \end{cases}$$
 
-Ý nghĩa trực quan rất đơn giản: nếu ở vòng lặp đó con vẹt hầu như đứng yên ($\Delta x_{i,d} \approx 0 \Rightarrow |\tanh(\Delta x_{i,d})| \approx 0$), bức ảnh giữ nguyên trạng thái cũ; nếu con vẹt nhảy một bước lớn ($\Delta x_{i,d}$ lớn $\Rightarrow |\tanh(\Delta x_{i,d})| \to 1$), trạng thái bức ảnh sẽ được lật ($0 \to 1$ hoặc $1 \to 0$). Cuối cùng, vị trí mới chỉ được cập nhật nếu có điểm Fitness cao hơn vị trí cũ ($F(X_i^{t+1}) > F(X_i^t)$).
+Cơ chế hàm truyền chữ V $V(\Delta x) = |\tanh(\Delta x)|$ mang lại ba đặc tính toán học then chốt cho thuật toán PO và các kiến trúc lai PO–GA:
+1. **Bảo toàn cấu trúc nghiệm khi hội tụ ($V(0) = 0$)**: Khi cá thể vẹt đứng yên hoặc tiến sát nghiệm tối ưu ($\Delta x_{i,d} \approx 0 \Rightarrow |\tanh(\Delta x_{i,d})| \approx 0$), xác suất đảo bit bằng $0$, bức ảnh giữ nguyên trạng thái cũ ($x_{i,d}^{t+1} = x_{i,d}^t$). Đặc tính này giúp PO kế thừa nguyên vẹn các cấu trúc gen tốt khi nhận bàn giao quần thể từ GA trong các biến thể lai `S1–S4`, `P1` và `C1`.
+2. **Tính đối xứng chẵn hai chiều ($V(-\Delta x) = V(\Delta x)$)**: Đồ thị hình chữ V đối xứng qua trục tung cho phép cả bước nhảy dương lớn ($\Delta x \gg 0$) lẫn bước nhảy âm lớn ($\Delta x \ll 0$) của phân phối Lévy đều kích hoạt khả năng đảo trạng thái ($0 \to 1$ để bổ sung ảnh đại diện mới, hoặc $1 \to 0$ để loại bỏ ảnh dư thừa).
+3. **Kẹp biên tự nhiên trước bước nhảy nặng đuôi ($\lim_{|\Delta x| \to \infty} V(\Delta x) = 1$)**: Mọi bước nhảy đột biến lớn của phân phối Lévy ($\beta = 1,5$) đều được nén mượt vào khoảng xác suất hợp lệ $[0, 1)$ mà không gây tràn số hay biến dạng phân bố.
+
+| Tiêu chí đối sánh | Hàm truyền hình chữ S: $S(\Delta x) = \frac{1}{1 + e^{-\Delta x}}$ | Hàm truyền hình chữ V: $V(\Delta x) = \lvert\tanh(\Delta x)\rvert$ (Áp dụng trong PO) |
+| :--- | :--- | :--- |
+| **Ý nghĩa xác suất** | Xác suất gán trực tiếp bit bằng $1$ ($\Pr(x_{i,d}^{t+1} = 1)$) | Xác suất **đảo trạng thái** hiện tại ($\Pr(x_{i,d}^{t+1} = 1 - x_{i,d}^t)$) |
+| **Khi đứng yên ($\Delta x = 0$)** | $S(0) = 0,50$ (Xáo trộn ngẫu nhiên $50\%$ số mẫu ảnh) | **$V(0) = 0,00$ (Bảo toàn $100\%$ trạng thái tập con hiện tại)** |
+| **Khi dịch chuyển lớn ($\lvert\Delta x\rvert \gg 0$)** | Bất đối xứng ($\Delta x \to +\infty$ gán $1$, $\Delta x \to -\infty$ gán $0$) | **Đối xứng hai chiều ($V(\pm\infty) \to 1$, cho phép đảo cả $0 \to 1$ và $1 \to 0$)** |
+| **Tương thích khi lai với GA** | Phá vỡ cấu trúc gen vừa được GA lai ghép | **Kế thừa mượt mà quần thể từ GA, chỉ lật các vị trí có $\Delta x$ lớn** |
+
+Cuối cùng, phép so sánh $\text{rand}(0,1) < V(\Delta x_{i,d})$ đóng vai trò là **bộ lượng tử hóa ngẫu nhiên (Stochastic Binarization)**: thay vì cắt ngưỡng cứng (như $V(\Delta x) > 0,5$ khiến các bước dịch chuyển nhỏ không bao giờ có cơ hội đổi trạng thái), cơ chế quay số xác suất trên đoạn $[0, 1)$ đảm bảo các chiều có dịch chuyển lớn ($V(\Delta x) \approx 0,90$) có $90\%$ cơ hội lật trạng thái, đồng thời vẫn duy trì xác suất nhỏ ($5\% - 15\%$) cho các chiều dịch chuyển nhẹ để thoát khỏi cực trị địa phương. Sau khi đi qua hàm truyền chữ V và toán tử sửa chữa $\text{Repair}$, vị trí mới chỉ được cập nhật theo cơ chế chọn lọc tham lam nếu có điểm Fitness cao hơn vị trí cũ ($F(X_i^{t+1}) > F(X_i^t)$).
 
 ### 4.3. Thiết kế Ba Kiến trúc Lai hóa PO–GA (Sequential, Parallel, Cooperative)
 
@@ -230,23 +249,31 @@ Nhằm khảo sát toàn diện cơ chế phối hợp giữa GA và PO truyền
    ┌──────┼──────┬──────┐           ▼                         ▼
    ▼      ▼      ▼      ▼          P1                        C1
   S1     S2     S3     S4      GA(50%) || PO(50%)       GA ↔ PO định kỳ Δt
-GA↔PO  PO↔GA  GA→PO  PO→GA     ──► Merge & Top-P     Trao đổi Top-k (Chống trùng)
+GA↔PO  PO↔GA  GA→PO  PO→GA     ──► Merge & Co-Refine    Trao đổi Top-P (Chống trùng)
 ```
 
 1. **Kiến trúc Tuần tự (Sequential Hybrid: S1, S2, S3, S4)**:
-   * **S1 (Alternating Sequential, GA-first)**: Chạy xen kẽ từng pha ngắn có độ dài cố định $p = 10$ vòng lặp theo chu trình $\text{GA}(10) \rightarrow \text{PO}(10) \rightarrow \text{GA}(10) \rightarrow \text{PO}(10) \dots$ cho đến khi đạt tổng số vòng lặp $T$.
+   * **S1 (Alternating Sequential, GA-first)**: Chạy xen kẽ từng pha ngắn có độ dài cố định $p = 10$ vòng lặp theo chu trình $\text{GA}(10) \rightarrow \text{PO}(10) \rightarrow \text{GA}(10) \rightarrow \text{PO}(10) \dots$ cho đến khi đạt tổng số vòng lặp $T = 100$.
    * **S2 (Alternating Sequential, PO-first)**: Đảo ngược thứ tự khởi đầu thành $\text{PO}(10) \rightarrow \text{GA}(10) \rightarrow \text{PO}(10) \rightarrow \text{GA}(10) \dots$ để kiểm tra hiệu ứng thứ tự (Ordering Effect) giữa khai phá và khai thác.
    * **S3 (Block Sequential, GA-first)**: Chia tổng ngân sách thành hai khối liên tục 50/50: chạy $\text{GA}(50\%)$ để tạo quần thể đa dạng, sau đó chuyển giao toàn bộ quần thể cho $\text{PO}(50\%)$ tinh chỉnh.
    * **S4 (Block Sequential, PO-first)**: Chạy $\text{PO}(50\%)$ ở nửa đầu, sau đó chuyển giao quần thể cho $\text{GA}(50\%)$ tái tổ hợp ở nửa sau.
 
-2. **Kiến trúc Song song Độc lập (Parallel Hybrid: P1 — Independent Parallel + Merge)**:
-   * Từ cùng một quần thể khởi tạo $P_0$ kích thước $P$, hệ thống tách thành hai nhánh độc lập chạy $50\%$ ngân sách mỗi nhánh: nhánh GA tiến hóa tạo ra $\text{Pop}_{\text{GA}}$ và nhánh PO tiến hóa tạo ra $\text{Pop}_{\text{PO}}$.
-   * Khi kết thúc, hai quần thể được hợp nhất và chọn lọc tinh hoa dưới cùng hàm mục tiêu $F$:
-     $$\text{Pop}_{\text{merged}} = \text{Pop}_{\text{GA}} \cup \text{Pop}_{\text{PO}}, \quad \text{Pop}_{\text{final}} = \text{Top-}P(\text{Pop}_{\text{merged}}, F)$$
+2. **Kiến trúc Song song Độc lập kèm Đồng Tinh chỉnh (Parallel Hybrid: P1 — Independent Parallel + Merge & Co-Refinement)**:
+   * Từ cùng một quần thể khởi tạo $P_0$ kích thước $P = 20$, hệ thống dành $50\%$ ngân sách đầu tách thành hai nhánh tiến hóa độc lập: nhánh GA tạo ra $\text{Pop}_{\text{GA}}$ và nhánh PO tạo ra $\text{Pop}_{\text{PO}}$.
+   * Hai quần thể được hợp nhất và chọn lọc tinh hoa $\text{Top-}P(\text{Pop}_{\text{GA}} \cup \text{Pop}_{\text{PO}}, F)$, sau đó sử dụng $50\%$ ngân sách còn lại để **Đồng tinh chỉnh (Co-Refinement)** tuần tự qua GA và PO trên quần thể đã hợp nhất.
 
 3. **Kiến trúc Hợp tác Hai chiều (Cooperative Hybrid: C1 — Bidirectional Elite Exchange with Duplicate Control)**:
-   * Hai quần thể $\text{Pop}_{\text{GA}}$ và $\text{Pop}_{\text{PO}}$ cùng tiến hóa song song. Sau mỗi chu kỳ $\Delta t$ vòng lặp, hai nhánh trao đổi $k = 3$ cá thể ưu tú nhất (Top-$k$ Elites) để thay thế $k$ cá thể kém nhất của nhánh đối diện.
-   * **Cơ chế kiểm soát trùng lặp (Duplicate Control)**: Để ngăn hiện tượng hai quần thể bị đồng hóa sớm do trao đổi lặp lại cùng một nghiệm cực đại, trước khi đưa cá thể ưu tú $e$ vào quần thể đích $\text{Pop}_{\text{target}}$, hệ thống kiểm tra điều kiện khoảng cách Hamming $\min_{Y \in \text{Pop}_{\text{target}}} \|e - Y\|_1 > 0$. Chỉ những cá thể ưu tú chưa tồn tại trong quần thể đích mới được phép di cư.
+   * Hai quần thể $\text{Pop}_{\text{GA}}$ và $\text{Pop}_{\text{PO}}$ cùng tiến hóa song song. Sau mỗi chu kỳ $\Delta t = 5$ vòng lặp ($10$ chặng đồng tiến hóa), hai nhánh hợp nhất và đồng bộ hóa các cá thể ưu tú nhất (Elites).
+   * **Cơ chế kiểm soát trùng lặp (Duplicate Control)**: Để ngăn hiện tượng hai quần thể bị đồng hóa sớm do trao đổi lặp lại cùng một nghiệm cực đại, hệ thống lọc bỏ các cá thể trùng lặp hoàn toàn ($\min_{Y \in \text{Pop}_{\text{target}}} \|e - Y\|_1 > 0$, thực thi qua `np.unique(..., axis=0)`) để chỉ giữ lại các cá thể ưu tú phân biệt trong quần thể.
+
+### 4.4. Tổng hợp các Cải tiến Thuật toán và Kỹ thuật Giúp Tối ưu hóa Độ chính xác Mô hình Học sâu
+
+Để giải quyết triệt để sự đánh đổi giữa tỷ lệ nén dữ liệu ($\text{Com}$) và độ chính xác phân loại của mạng CNN hạ nguồn, hệ thống đề xuất bốn cải tiến phương pháp luận và kỹ thuật cốt lõi so với cách tiếp cận cơ sở truyền thống:
+
+1. **Chuẩn hóa Biên độ Dịch chuyển Bầy đàn trong PO (Chống hiện tượng Nén cực đoan — Over-Compression)**: Toàn bộ bốn hành vi của PO đều được neo quanh vị trí hiện tại $X_i^t + \alpha \cdot (\dots)$ kết hợp với vector hướng đàn chuẩn hóa trung tâm (`flock_vec`), ngăn chặn hiện tượng độ dịch chuyển $\Delta x = X_i^{\text{cont}} - X_i^t$ suy biến về $-1$ làm xóa nhầm hàng loạt mẫu ảnh đại diện đang có.
+2. **Toán tử Đột biến Cân bằng Mật độ trong GA (Density-Balanced Adaptive Mutation)**: Thay vì lật bit với xác suất đồng nhất làm tập con có mật độ $r \approx 27\%$ bị phình to (do số lượng bit $0$ chiếm $73\%$ nhiều gấp $2,7$ lần số lượng bit $1$), toán tử đột biến nhân trọng số đối xứng $p_m(t)(1-r)$ cho các vị trí $x_j=1$ và $p_m(t)r$ cho các vị trí $x_j=0$. Nhờ đó, kỳ vọng số mẫu bị loại bỏ luôn bằng kỳ vọng số mẫu được thêm mới ($N r (1-r) p_m(t)$), biến đột biến thành cơ chế **hoán đổi mẫu cân bằng (1-đổi-1)**.
+3. **Cân chỉnh Hàm mục tiêu Đa tiêu chí Ưu tiên Độ bao phủ Hình học ($\text{Cov}$-Prioritized Fitness)**: Thiết lập bộ trọng số $(\alpha=0,15; \, \beta=0,45; \, \gamma=0,20; \, \delta=0,20)$, đặt Độ bao phủ không gian đặc trưng ($\beta = 0,45$) làm thành phần trọng tâm thay vì ưu tiên Độ nén ($\delta$) quá mức. Cơ chế này ngăn thuật toán rơi vào nghiệm tầm thường (xóa cạn kiệt dữ liệu để tăng $\text{Com}$), giữ ổn định kích thước tập Coreset quanh mức $25\% - 27\%$ ($\sim 2.800 - 3.010$ ảnh) và bảo toàn $\sim 99\%$ độ chính xác của tập đầy đủ.
+4. **Tối ưu hóa Truy xuất Ma trận Khoảng cách trên VRAM GPU**: Hợp nhất phép trích xuất ma trận con `torch.index_select` trên bộ nhớ GPU cho cả hai tiêu chí $\text{Div}$ và $\text{Cov}$, giúp rút ngắn thời gian thực thi $2.000\text{ FEs}$ trên ma trận $11.228 \times 11.228$ xuống chỉ còn $\sim 9,5\text{ giây}$.
 
 ---
 
@@ -257,8 +284,8 @@ GA↔PO  PO↔GA  GA→PO  PO→GA     ──► Merge & Top-P     Trao đổi T
 Để trả lời đầy đủ các câu hỏi nghiên cứu và đáp ứng yêu cầu đối sánh của đề cương CNTT-KLCN140, bộ thực nghiệm chính thức bao gồm **11 phương pháp** chia thành hai nhóm:
 * **Nhóm Đối chuẩn (Baselines: B0 – B4)**:
   * **B0 — Full Dataset (Upper Bound)**: Sử dụng $100\%$ tập dữ liệu huấn luyện gốc (không rút gọn).
-  * **B1 — Random Selection**: Lấy mẫu ngẫu nhiên phân bố đều theo đúng kích thước tập con mục tiêu $M$.
-  * **B2 — Stratified Random Selection**: Lấy mẫu ngẫu nhiên phân tầng, bảo toàn chính xác tỷ lệ phân bố của $6$ lớp cảnh tự nhiên.
+  * **B1 — Random Selection**: Lấy mẫu ngẫu nhiên phân bố đều theo đúng kích thước trung vị $M_{\text{baseline}} = 2.978$ ảnh của các thuật toán tối ưu hóa.
+  * **B2 — Stratified Random Selection**: Lấy mẫu ngẫu nhiên phân tầng tại cùng kích thước $M_{\text{baseline}} = 2.978$ ảnh, bảo toàn chính xác tỷ lệ phân bố của $6$ lớp cảnh tự nhiên.
   * **B3 — Genetic Algorithm (GA-only)**: Chỉ chạy giải thuật di truyền trên $100\%$ ngân sách FEs.
   * **B4 — Parrot Optimizer (PO-only)**: Chỉ chạy thuật toán đàn vẹt truyền thống (kèm bước ánh xạ nhị phân đầu ra) trên $100\%$ ngân sách FEs.
 * **Nhóm Kiến trúc Lai đề xuất (Hybrid PO–GA: S1, S2, S3, S4, P1, C1)**: Gồm 4 cấu hình tuần tự (S1–S4), 1 cấu hình song song (P1) và 1 cấu hình hợp tác (C1).
@@ -275,7 +302,7 @@ Trong các thuật toán siêu mô phỏng (metaheuristics), chi phí tính toá
 | **S2** | Sequential (Xen kẽ) | $5$ chu kỳ $\times [\text{PO}(10) \rightarrow \text{GA}(10)]$ | $1.000$ | $1.000$ | **$2.000$** |
 | **S3** | Sequential (Khối) | $\text{GA}(50) \rightarrow \text{PO}(50)$ | $1.000$ | $1.000$ | **$2.000$** |
 | **S4** | Sequential (Khối) | $\text{PO}(50) \rightarrow \text{GA}(50)$ | $1.000$ | $1.000$ | **$2.000$** |
-| **P1** | Parallel (Độc lập) | $\text{GA}(50) \parallel \text{PO}(50) \rightarrow \text{Merge}$ | $1.000$ | $1.000$ | **$2.000$** |
+| **P1** | Parallel (Độc lập) | $\text{GA}(50\%) \parallel \text{PO}(50\%) \rightarrow \text{Merge}$ | $1.000$ | $1.000$ | **$2.000$** |
 | **C1** | Cooperative (Hợp tác) | $10$ chặng $\times [\text{GA}(5) \leftrightarrow \text{PO}(5)]$ | $1.000$ | $1.000$ | **$2.000$** |
 
 **Phân biệt giữa Ngân sách FEs và Thời gian thực thi phần cứng (Wall-Clock Runtime)**: Báo cáo phân biệt rõ ràng giữa tính song song về mặt kiến trúc thuật toán (Algorithmic Parallelism trong P1 và C1, nơi hai quần thể tiến hóa độc lập về mặt logic dưới cùng tổng số $2.000\text{ FEs}$) và tính song song phần cứng (Hardware Parallelism). Trong thực nghiệm, các cá thể trong cùng một thế hệ được đánh giá song song qua `ThreadPoolExecutor`, đồng thời cả số lượng FEs lẫn thời gian thực thi thực tế (Wall-Clock Time tính bằng giây) đều được ghi nhận đầy đủ.
@@ -352,27 +379,27 @@ Số liệu từ Bảng 7.1 và Bảng 7.2 cho thấy cả ba kiến trúc mạn
 
 ### 7.2. Kết quả Đánh giá Tầng 1: Chất lượng Tối ưu hóa Tổ hợp trên Hàm Mục tiêu Bốn Thành phần
 
-Thực nghiệm tối ưu hóa được thực hiện trên tập đặc trưng huấn luyện $D_{\text{train}}$ ($N = 11.228$ ảnh, vector ResNet-18 $512$ chiều) với hàm mục tiêu bốn thành phần nguyên bản $F(X) = 0,10\,\text{Div}(X) + 0,30\,\text{Cov}(X) + 0,20\,\text{Bal}(X) + 0,40\,\text{Com}(X)$ dưới cùng ngân sách đánh giá $2.000\text{ FEs}$ ($P = 20$ cá thể, $T = 100$ vòng lặp) lặp lại qua 3 hạt giống độc lập (`seeds = [42, 123, 456]`). Bảng 7.3 tổng hợp kết quả thống kê mô tả ($\text{Mean} \pm \text{Std}$ và $\text{Median} \text{ [IQR]}$), giá trị trung bình của bốn thành phần mục tiêu, kích thước tập con hội tụ $M$, tỷ lệ rút gọn dữ liệu ($\text{DR}\%$) và thời gian thực thi tối ưu hóa từ phiên chạy thực nghiệm [`outputs/run_poga_all_20261001_235502`](file:///d:/Code/KhoaLuanDatasetReduction/outputs/run_poga_all_20261001_235502/descriptive_statistics.csv).
+Thực nghiệm tối ưu hóa được thực hiện trên tập đặc trưng huấn luyện $D_{\text{train}}$ ($N = 11.228$ ảnh, vector ResNet-18 $512$ chiều) với hàm mục tiêu bốn thành phần $F(X) = 0,15\,\text{Div}(X) + 0,45\,\text{Cov}(X) + 0,20\,\text{Bal}(X) + 0,20\,\text{Com}(X)$ dưới cùng ngân sách đánh giá $2.000\text{ FEs}$ ($P = 20$ cá thể, $T = 100$ vòng lặp) lặp lại qua 3 hạt giống độc lập (`seeds = [42, 123, 456]`). Bảng 7.3 tổng hợp kết quả thống kê mô tả ($\text{Mean} \pm \text{Std}$ và $\text{Median} \text{ [IQR]}$), giá trị trung bình của bốn thành phần mục tiêu, kích thước tập con hội tụ $M$, tỷ lệ rút gọn dữ liệu ($\text{DR}\%$) và thời gian thực thi tối ưu hóa từ phiên chạy thực nghiệm chính thức [`outputs/run_poga_all_20261002_173334`](file:///d:/Code/KhoaLuanDatasetReduction/outputs/run_poga_all_20261002_173334/descriptive_statistics.csv).
 
-**Bảng 7.3: Đối sánh Chất lượng Tối ưu hóa (Tầng 1) giữa 10 phương pháp dưới ngân sách 2.000 FEs (`run_poga_all_20261001_235502`)**
+**Bảng 7.3: Đối sánh Chất lượng Tối ưu hóa (Tầng 1) giữa 10 phương pháp dưới ngân sách 2.000 FEs (`run_poga_all_20261002_173334`)**
 
 | Phương pháp | Kiến trúc | Số ảnh giữ lại $M$ ($\text{Mean} \pm \text{Std}$) | Tỷ lệ rút gọn $\text{DR}$ (%) | Fitness ($\text{Mean} \pm \text{Std}$) | Fitness ($\text{Median} \text{ [IQR]}$) | $\text{Div}$ | $\text{Cov}$ | $\text{Bal}$ | $\text{Com}$ | Thời gian Tối ưu (s) |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **B1 — Random** | Ngẫu nhiên | $604,0 \pm 0,0$ | $94,62\%$ | $0,8765 \pm 0,0010$ | $0,8759 \text{ [0,0011]}$ | $0,5037$ | $0,8351$ | $0,9855$ | $0,9462$ | $< 0,01\text{ s}$ |
-| **B2 — Stratified** | Phân tầng | $604,0 \pm 0,0$ | $94,62\%$ | $0,8796 \pm 0,0000$ | $0,8796 \text{ [0,0000]}$ | $0,5060$ | $0,8355$ | **$0,9996$** | $0,9462$ | $< 0,01\text{ s}$ |
-| **B3 — GA-only** | Đơn lẻ | $3.229,0 \pm 36,9$ | $71,24\%$ | $0,8026 \pm 0,0012$ | $0,8028 \text{ [0,0014]}$ | $0,5024$ | **$0,8926$** | $0,9979$ | $0,7124$ | $337,48 \pm 2,05\text{ s}$ |
-| **B4 — PO-only** | Đơn lẻ | $223,7 \pm 2,5$ | $98,01\%$ | $0,8869 \pm 0,0006$ | **$0,8873 \text{ [0,0006]}$** | $0,5130$ | $0,8127$ | $0,9988$ | $0,9801$ | $139,24 \pm 6,37\text{ s}$ |
-| **S1 — Alt GA→PO** | Sequential | $243,0 \pm 15,9$ | $97,84\%$ | $0,8862 \pm 0,0004$ | $0,8862 \text{ [0,0006]}$ | $0,5076$ | $0,8155$ | $0,9973$ | $0,9784$ | $123,29 \pm 5,75\text{ s}$ |
-| **S2 — Alt PO→GA** | Sequential | $272,7 \pm 36,9$ | $97,57\%$ | $0,8863 \pm 0,0008$ | $0,8862 \text{ [0,0010]}$ | $0,5112$ | $0,8173$ | $0,9986$ | $0,9757$ | **$105,81 \pm 2,99\text{ s}$** |
-| **S3 — Block GA→PO**| Sequential | $213,7 \pm 14,7$ | $98,10\%$ | **$0,8875 \pm 0,0007$** | $0,8872 \text{ [0,0008]}$ | **$0,5144$** | $0,8129$ | $0,9987$ | $0,9810$ | $215,95 \pm 2,74\text{ s}$ |
-| **S4 — Block PO→GA**| Sequential | $227,3 \pm 7,4$ | $97,98\%$ | $0,8866 \pm 0,0004$ | $0,8869 \text{ [0,0004]}$ | $0,5126$ | $0,8132$ | $0,9977$ | $0,9798$ | $114,35 \pm 5,02\text{ s}$ |
-| **P1 — Parallel** | Parallel | $221,7 \pm 21,0$ | $98,03\%$ | $0,8865 \pm 0,0004$ | $0,8865 \text{ [0,0006]}$ | $0,5100$ | $0,8127$ | $0,9982$ | $0,9803$ | $241,50 \pm 4,80\text{ s}$ |
-| **C1 — Cooperative**| Cooperative| $204,0 \pm 6,2$ | **$98,18\%$** | $0,8870 \pm 0,0004$ | $0,8870 \text{ [0,0005]}$ | $0,5110$ | $0,8114$ | $0,9984$ | **$0,9818$** | $113,64 \pm 2,12\text{ s}$ |
+| **S2 — Alt PO→GA** | Sequential | $2.828,3 \pm 61,6$ | $74,81\%$ | **$0,8249 \pm 0,0005$** | **$0,8248 \text{ [0,0006]}$** | **$0,5094$** | $0,8867$ | $0,9993$ | $0,7481$ | $9,64 \pm 0,11\text{ s}$ |
+| **S1 — Alt GA→PO** | Sequential | **$2.799,0 \pm 37,6$** | **$75,07\%$** | $0,8248 \pm 0,0003$ | $0,8247 \text{ [0,0003]}$ | $0,5075$ | $0,8861$ | $0,9992$ | **$0,7507$** | $9,54 \pm 0,05\text{ s}$ |
+| **S3 — Block GA→PO**| Sequential | $2.949,0 \pm 24,1$ | $73,74\%$ | $0,8232 \pm 0,0002$ | $0,8232 \text{ [0,0002]}$ | $0,5067$ | $0,8886$ | $0,9992$ | $0,7374$ | $9,66 \pm 0,05\text{ s}$ |
+| **S4 — Block PO→GA**| Sequential | $2.963,3 \pm 35,6$ | $73,61\%$ | $0,8232 \pm 0,0003$ | $0,8231 \text{ [0,0004]}$ | $0,5071$ | $0,8887$ | **$0,9998$** | $0,7361$ | $9,85 \pm 0,03\text{ s}$ |
+| **B3 — GA-only** | Đơn lẻ | $2.969,3 \pm 15,1$ | $73,55\%$ | $0,8231 \pm 0,0001$ | $0,8230 \text{ [0,0002]}$ | $0,5068$ | $0,8889$ | **$0,9998$** | $0,7355$ | **$9,26 \pm 0,03\text{ s}$** |
+| **C1 — Cooperative**| Cooperative| $3.012,0 \pm 25,5$ | $73,18\%$ | $0,8226 \pm 0,0001$ | $0,8226 \text{ [0,0001]}$ | $0,5074$ | $0,8896$ | $0,9995$ | $0,7318$ | $10,58 \pm 0,09\text{ s}$ |
+| **P1 — Parallel** | Parallel | $3.007,0 \pm 37,6$ | $73,22\%$ | $0,8225 \pm 0,0003$ | $0,8226 \text{ [0,0003]}$ | $0,5065$ | $0,8895$ | $0,9991$ | $0,7322$ | $9,84 \pm 0,06\text{ s}$ |
+| **B2 — Stratified** | Phân tầng | $2.978,0 \pm 0,0$ | $73,48\%$ | $0,8220 \pm 0,0001$ | $0,8220 \text{ [0,0002]}$ | $0,5021$ | $0,8883$ | $1,0000$ | $0,7348$ | $< 0,01\text{ s}$ |
+| **B4 — PO-only** | Đơn lẻ | $3.064,3 \pm 22,2$ | $72,71\%$ | $0,8216 \pm 0,0003$ | $0,8214 \text{ [0,0003]}$ | $0,5063$ | **$0,8904$** | $0,9979$ | $0,7271$ | $10,52 \pm 0,04\text{ s}$ |
+| **B1 — Random** | Ngẫu nhiên | $2.978,0 \pm 0,0$ | $73,48\%$ | $0,8209 \pm 0,0005$ | $0,8210 \text{ [0,0007]}$ | $0,5023$ | $0,8884$ | $0,9940$ | $0,7348$ | $< 0,01\text{ s}$ |
 
 **Phân tích cơ chế hội tụ và động lực học tối ưu hóa (Tầng 1)**:
-Số liệu từ Bảng 7.3 phản ánh sự phân hóa rõ rệt về hành vi tìm kiếm trên không gian nhị phân $N = 11.228$ chiều giữa giải thuật di truyền thuần túy (`B3 — GA-only`) và nhóm các thuật toán tích hợp động lực học Đàn vẹt (`B4 — PO-only` và sáu cấu hình lai `S1–S4, P1, C1`). Cụ thể, cấu hình lai theo khối **`S3 (Block GA→PO)`** đạt điểm thích nghi trung bình cao nhất toàn cục là $0,8875 \pm 0,0007$ (với độ đa dạng $\text{Div} = 0,5144$), theo sát bởi cấu hình hợp tác đồng tiến hóa **`C1 (Coop Exchange)`** đạt $0,8870 \pm 0,0004$ (với tỷ lệ nén cao nhất $\text{Com} = 0,9818$, tương ứng giữ lại trung bình $204,0$ mẫu ảnh). Trong khi đó, `GA-only` dừng lại ở mức điểm thích nghi $0,8026 \pm 0,0012$ với kích thước tập con trung bình $M = 3.229,0$ ảnh ($\text{DR} = 71,24\%$).
+Số liệu từ Bảng 7.3 cho thấy toàn bộ sáu biến thể lai ghép Hybrid PO–GA (`S1, S2, S3, S4, P1, C1`) và giải thuật `GA-only` đều đạt điểm thích nghi tổng hợp cao hơn so với hai phương pháp lấy mẫu ngẫu nhiên (`Random B1`, `Stratified B2`) và thuật toán `PO-only (B4)`. Cụ thể, dẫn đầu toàn cục về điểm thích nghi là hai cấu hình lai tuần tự xen kẽ chu kỳ ngắn **`S2 (Alt PO→GA)`** ($0,8249 \pm 0,0005$, đạt đỉnh $0,8256$ tại `Seed 42`) và **`S1 (Alt GA→PO)`** ($0,8248 \pm 0,0003$), đồng thời đạt tỷ lệ rút gọn dữ liệu cao nhất là **$74,81\%$ ($M = 2.828,3$ ảnh)** và **$75,07\%$ ($M = 2.799,0$ ảnh)**. Tiếp theo là hai cấu hình lai chia khối **`S3 (Block GA→PO)`** ($0,8232 \pm 0,0002$) và **`S4 (Block PO→GA)`** ($0,8232 \pm 0,0003$, đạt độ cân bằng lớp $\text{Bal} = 0,9998$).
 
-Nguyên nhân toán học của sự khác biệt này bắt nguồn từ tương tác giữa toán tử dịch chuyển liên tục của thuật toán PO truyền thống, bước ánh xạ nhị phân ($|\tanh(\Delta x)|$) và trọng số nén $\delta = 0,40$. Trong giải thuật `GA-only`, toán tử đột biến lật từng bit độc lập với xác suất đồng nhất $p_m(t)$. Khi quần thể được khởi tạo ở mật độ $\text{init\_ratio} = 0,30$ ($30\%$ bit $1$ và $70\%$ bit $0$), số lượng bit $0$ bị lật sang $1$ nhiều gấp $2,33$ lần số lượng bit $1$ bị lật sang $0$, tạo ra lực cân bằng giữ kích thước tập con của GA ổn định quanh ngưỡng $28,76\%$ tập dữ liệu gốc ($M \approx 3.229$ ảnh, đạt độ bao phủ $\text{Cov} = 0,8926$). Ngược lại, trong thuật toán PO truyền thống, phương trình hành vi giao tiếp ($S_t = 3$) cập nhật độ dịch chuyển tỷ lệ với $(X_i^t - X_{\text{mean}}^t)$. Khi mật độ trung bình của đàn $X_{\text{mean}}^t \approx 0,30$, các chiều đang có trạng thái $x_{i,d}^t = 1$ chịu biên độ dịch chuyển $|1 - 0,30| = 0,70$, sinh ra xác suất lật bit $1 \rightarrow 0$ qua hàm $|\tanh(\Delta x)|$ cao gấp hơn hai lần so với xác suất lật bit $0 \rightarrow 1$ tại các chiều có $x_{i,d}^t = 0$ ($|0 - 0,30| = 0,30$). Khi số lượng mẫu $M$ giảm từ $3.229$ ảnh xuống khoảng $220$ ảnh, thành phần độ nén $\delta \cdot \text{Com}(X)$ tăng thêm $+0,40 \times (0,9802 - 0,7124) = +0,1071$, vượt xa mức suy giảm của thành phần độ bao phủ $\beta \cdot \text{Cov}(X)$ là $-0,30 \times (0,8926 - 0,8132) = -0,0238$. Do đó, cơ chế chọn lọc tham lam (Greedy Selection) của PO và các kiến trúc lai PO–GA lập tức chấp nhận các nghiệm có độ nén cao ($\text{DR} \in [97,57\%, 98,18\%]$). Đồng thời, nhờ kích thước tập con $M$ nhỏ hơn, chi phí tính toán ma trận con giảm mạnh giúp thời gian thực thi của **`S2 (Alt PO→GA)`** chỉ mất $105,81\text{ s}$ và **`C1 (Coop Exchange)`** chỉ mất $113,64\text{ s}$, nhanh hơn gấp $3,19$ lần và $2,97$ lần so với `GA-only` ($337,48\text{ s}$).
+Sự vượt trội của các kiến trúc lai bắt nguồn từ cơ chế bổ trợ toán học giữa PO và GA: trong khi `PO-only` có xu hướng hội tụ nhanh trong $25$ vòng lặp đầu rồi chững lại ở mức Fitness $0,8216$ do thiếu toán tử lai ghép gen chéo giữa các cá thể, việc chuyển giao quần thể sang pha GA (ở vòng $t = 50$ trong `S4` hoặc sau mỗi $10$ vòng lặp trong `S1, S2`) cho phép toán tử lai ghép đồng nhất (`Uniform Crossover`) kết hợp các cụm mẫu tốt nhất từ nhiều cá thể vẹt khác nhau, đồng thời toán tử đột biến cân bằng mật độ giữ cho kích thước tập con hội tụ chính xác tại điểm cân bằng đạo hàm riêng ($\text{DR} \in [73,18\%, 75,07\%]$). Nhờ tiền tính toán ma trận khoảng cách chuẩn hóa trên VRAM GPU, mỗi phiên tối ưu hóa $2.000\text{ FEs}$ chỉ mất từ **$9,26\text{ s}$ đến $10,58\text{ s}$**.
 
 ---
 
@@ -380,63 +407,64 @@ Nguyên nhân toán học của sự khác biệt này bắt nguồn từ tươn
 
 Sau khi hoàn tất giai đoạn tối ưu hóa Tầng 1, các tập ảnh đại diện tốt nhất (`best_sol`) của từng phương pháp ứng với từng hạt giống (`seed` $\in \{42, 123, 456\}$) được trích xuất để huấn luyện độc lập ba kiến trúc mạng học sâu gồm **ResNet-18**, **MobileNetV3-Small** và **DenseNet-121** trong $5$ epochs ($\text{batch\_size} = 64$, $\text{lr} = 10^{-3}$). Toàn bộ kết quả đánh giá trên tập kiểm thử độc lập `seg_test` ($3.000$ ảnh) được trình bày chi tiết tại Bảng 7.4.
 
-**Bảng 7.4: Đối sánh Hiệu năng Phân loại và Tăng tốc Huấn luyện (Tầng 2) trên 3 kiến trúc CNN (`run_poga_all_20261001_235502`)**
+**Bảng 7.4: Đối sánh Hiệu năng Phân loại và Tăng tốc Huấn luyện (Tầng 2) trên 3 kiến trúc CNN (`run_poga_all_20261002_173334`)**
 
 | Phương pháp | Mô hình CNN | Tỷ lệ rút gọn $\text{DR}$ (%) | Test Accuracy ($\text{Mean} \pm \text{Std} \%$) | Test Accuracy ($\text{Median} \text{ [IQR]} \%$) | Macro F1-Score ($\text{Mean} \pm \text{Std} \%$) | Tỷ lệ duy trì $\text{ARR}$ (%) | Tăng tốc $\text{Speedup}$ ($\times$) |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | **Full Dataset (B0)** | `resnet18` | $0,00\%$ | $90,27 \pm 0,00\%$ | $90,27 \text{ [0,00]}\%$ | $90,41 \pm 0,00\%$ | $100,00\%$ | $1,00\times$ |
 | **Full Dataset (B0)** | `mobilenet_v3` | $0,00\%$ | $88,93 \pm 0,00\%$ | $88,93 \text{ [0,00]}\%$ | $89,25 \pm 0,00\%$ | $100,00\%$ | $1,00\times$ |
 | **Full Dataset (B0)** | `densenet121` | $0,00\%$ | $90,57 \pm 0,00\%$ | $90,57 \text{ [0,00]}\%$ | $90,72 \pm 0,00\%$ | $100,00\%$ | $1,00\times$ |
-| **B3 — GA-only** | `resnet18` | $71,24\%$ | **$89,35 \pm 0,39\%$** | **$89,13 \text{ [0,44]}\%$** | **$89,55 \pm 0,40\%$** | **$98,99\%$** | $1,57\times$ |
-| **B3 — GA-only** | `mobilenet_v3` | $71,24\%$ | **$87,79 \pm 0,24\%$** | **$87,87 \text{ [0,28]}\%$** | **$88,13 \pm 0,24\%$** | **$98,72\%$** | $1,36\times$ |
-| **B3 — GA-only** | `densenet121` | $71,24\%$ | **$88,99 \pm 0,09\%$** | **$89,03 \text{ [0,10]}\%$** | **$89,22 \pm 0,12\%$** | **$98,25\%$** | $1,44\times$ |
-| **S2 — Alt PO→GA** | `resnet18` | $97,57\%$ | $75,49 \pm 1,80\%$ | $76,03 \text{ [2,15]}\%$ | $75,80 \pm 1,90\%$ | $83,63\%$ | $3,03\times$ |
-| **S2 — Alt PO→GA** | `mobilenet_v3` | $97,57\%$ | **$79,81 \pm 0,67\%$** | $79,93 \text{ [0,82]}\%$ | **$79,72 \pm 0,76\%$** | **$89,75\%$** | $2,38\times$ |
-| **S2 — Alt PO→GA** | `densenet121` | $97,57\%$ | **$79,10 \pm 2,57\%$** | $78,07 \text{ [3,02]}\%$ | **$79,35 \pm 2,61\%$** | **$87,34\%$** | $2,63\times$ |
-| **S1 — Alt GA→PO** | `resnet18` | $97,84\%$ | $74,97 \pm 1,46\%$ | $75,97 \text{ [1,56]}\%$ | $75,22 \pm 1,54\%$ | $83,05\%$ | $2,41\times$ |
-| **S1 — Alt GA→PO** | `mobilenet_v3` | $97,84\%$ | $79,59 \pm 1,85\%$ | **$80,57 \text{ [2,10]}\%$** | $79,66 \pm 2,05\%$ | $89,50\%$ | $2,28\times$ |
-| **S1 — Alt GA→PO** | `densenet121` | $97,84\%$ | $78,93 \pm 0,27\%$ | **$78,93 \text{ [0,33]}\%$** | $79,10 \pm 0,33\%$ | $87,15\%$ | $2,45\times$ |
-| **P1 — Parallel** | `resnet18` | $98,03\%$ | $72,02 \pm 4,20\%$ | $73,90 \text{ [4,88]}\%$ | $72,39 \pm 4,26\%$ | $79,79\%$ | $3,52\times$ |
-| **P1 — Parallel** | `mobilenet_v3` | $98,03\%$ | $78,21 \pm 2,14\%$ | $78,97 \text{ [2,54]}\%$ | $78,17 \pm 2,22\%$ | $87,95\%$ | $2,80\times$ |
-| **P1 — Parallel** | `densenet121` | $98,03\%$ | $77,02 \pm 1,44\%$ | $77,80 \text{ [1,63]}\%$ | $77,29 \pm 1,54\%$ | $85,04\%$ | $2,76\times$ |
-| **S4 — Block PO→GA**| `resnet18` | $97,98\%$ | $74,55 \pm 1,20\%$ | $74,17 \text{ [1,44]}\%$ | $74,54 \pm 1,29\%$ | $82,58\%$ | $3,57\times$ |
-| **S4 — Block PO→GA**| `mobilenet_v3` | $97,98\%$ | $77,99 \pm 0,53\%$ | $78,17 \text{ [0,63]}\%$ | $77,91 \pm 0,73\%$ | $87,70\%$ | $2,66\times$ |
-| **S4 — Block PO→GA**| `densenet121` | $97,98\%$ | $76,71 \pm 0,48\%$ | $77,03 \text{ [0,52]}\%$ | $76,78 \pm 0,81\%$ | $84,70\%$ | $2,80\times$ |
-| **B4 — PO-only** | `resnet18` | $98,01\%$ | $75,03 \pm 1,12\%$ | $75,60 \text{ [1,28]}\%$ | $75,17 \pm 0,97\%$ | $83,12\%$ | $2,00\times$ |
-| **B4 — PO-only** | `mobilenet_v3` | $98,01\%$ | $77,94 \pm 0,39\%$ | $77,77 \text{ [0,45]}\%$ | $77,92 \pm 0,50\%$ | $87,64\%$ | $1,46\times$ |
-| **B4 — PO-only** | `densenet121` | $98,01\%$ | $77,42 \pm 0,56\%$ | $77,50 \text{ [0,69]}\%$ | $77,81 \pm 0,59\%$ | $85,49\%$ | $1,71\times$ |
-| **S3 — Block GA→PO**| `resnet18` | $98,10\%$ | $60,04 \pm 18,56\%$ | $73,03 \text{ [19,75]}\%$ | $58,93 \pm 20,03\%$ | $66,51\%$ | **$3,86\times$** |
-| **S3 — Block GA→PO**| `mobilenet_v3` | $98,10\%$ | $77,65 \pm 1,50\%$ | $77,13 \text{ [1,78]}\%$ | $77,57 \pm 1,56\%$ | $87,32\%$ | $2,83\times$ |
-| **S3 — Block GA→PO**| `densenet121` | $98,10\%$ | $72,27 \pm 10,53\%$ | $79,03 \text{ [11,48]}\%$ | $71,74 \pm 11,63\%$ | $79,79\%$ | $2,93\times$ |
-| **C1 — Cooperative**| `resnet18` | $98,18\%$ | $68,06 \pm 5,70\%$ | $70,90 \text{ [6,53]}\%$ | $67,22 \pm 6,18\%$ | $75,39\%$ | $3,71\times$ |
-| **C1 — Cooperative**| `mobilenet_v3` | $98,18\%$ | $75,62 \pm 1,66\%$ | $75,07 \text{ [1,97]}\%$ | $75,46 \pm 1,74\%$ | $85,03\%$ | $2,71\times$ |
-| **C1 — Cooperative**| `densenet121` | $98,18\%$ | $74,16 \pm 2,34\%$ | $75,50 \text{ [2,61]}\%$ | $73,93 \pm 2,13\%$ | $81,88\%$ | $2,86\times$ |
-| **B1 — Random** | `resnet18` | $94,62\%$ | $84,29 \pm 0,58\%$ | $84,00 \text{ [0,67]}\%$ | $84,52 \pm 0,52\%$ | $93,37\%$ | $2,16\times$ |
-| **B1 — Random** | `mobilenet_v3` | $94,62\%$ | $84,60 \pm 0,74\%$ | $84,37 \text{ [0,89]}\%$ | $84,86 \pm 0,77\%$ | $95,13\%$ | $1,85\times$ |
-| **B1 — Random** | `densenet121` | $94,62\%$ | $86,13 \pm 0,32\%$ | $86,23 \text{ [0,38]}\%$ | $86,35 \pm 0,40\%$ | $95,10\%$ | $1,92\times$ |
-| **B2 — Stratified** | `resnet18` | $94,62\%$ | $85,20 \pm 0,12\%$ | $85,23 \text{ [0,15]}\%$ | $85,40 \pm 0,16\%$ | $94,38\%$ | $3,10\times$ |
-| **B2 — Stratified** | `mobilenet_v3` | $94,62\%$ | $84,61 \pm 0,59\%$ | $84,53 \text{ [0,72]}\%$ | $84,87 \pm 0,57\%$ | $95,14\%$ | $2,17\times$ |
-| **B2 — Stratified** | `densenet121` | $94,62\%$ | $86,28 \pm 0,54\%$ | $86,40 \text{ [0,65]}\%$ | $86,52 \pm 0,56\%$ | $95,26\%$ | $2,30\times$ |
+| **S4 — Block PO→GA**| `resnet18` | $73,61\%$ | $89,24 \pm 0,32\%$ | $89,13 \text{ [0,38]}\%$ | $89,40 \pm 0,31\%$ | $98,87\%$ | $13,29\times$ |
+| **S4 — Block PO→GA**| `mobilenet_v3` | $73,61\%$ | **$88,02 \pm 0,34\%$** | $88,13 \text{ [0,40]}\%$ | **$88,36 \pm 0,37\%$** | **$98,98\%$** | $12,35\times$ |
+| **S4 — Block PO→GA**| `densenet121` | $73,61\%$ | $89,36 \pm 0,43\%$ | **$89,53 \text{ [0,50]}\%$** | $89,48 \pm 0,47\%$ | $98,66\%$ | $11,92\times$ |
+| **P1 — Parallel** | `resnet18` | $73,22\%$ | **$89,38 \pm 0,10\%$** | **$89,37 \text{ [0,12]}\%$** | **$89,58 \pm 0,07\%$** | **$99,02\%$** | $13,10\times$ |
+| **P1 — Parallel** | `mobilenet_v3` | $73,22\%$ | $87,74 \pm 0,34\%$ | $87,53 \text{ [0,38]}\%$ | $88,04 \pm 0,36\%$ | $98,67\%$ | $12,17\times$ |
+| **P1 — Parallel** | `densenet121` | $73,22\%$ | $89,13 \pm 0,43\%$ | $89,03 \text{ [0,52]}\%$ | $89,36 \pm 0,36\%$ | $98,42\%$ | $11,83\times$ |
+| **B3 — GA-only** | `resnet18` | $73,55\%$ | $89,14 \pm 0,36\%$ | $89,07 \text{ [0,43]}\%$ | $89,29 \pm 0,41\%$ | $98,76\%$ | $13,12\times$ |
+| **B3 — GA-only** | `mobilenet_v3` | $73,55\%$ | $87,64 \pm 0,54\%$ | $87,40 \text{ [0,63]}\%$ | $87,93 \pm 0,52\%$ | $98,55\%$ | $12,48\times$ |
+| **B3 — GA-only** | `densenet121` | $73,55\%$ | **$89,37 \pm 0,21\%$** | $89,33 \text{ [0,25]}\%$ | **$89,58 \pm 0,23\%$** | **$98,67\%$** | $11,94\times$ |
+| **C1 — Cooperative**| `resnet18` | $73,18\%$ | $89,36 \pm 0,14\%$ | **$89,40 \text{ [0,17]}\%$** | $89,54 \pm 0,08\%$ | $98,99\%$ | $13,07\times$ |
+| **C1 — Cooperative**| `mobilenet_v3` | $73,18\%$ | $87,40 \pm 0,23\%$ | $87,53 \text{ [0,25]}\%$ | $87,74 \pm 0,27\%$ | $98,28\%$ | $12,26\times$ |
+| **C1 — Cooperative**| `densenet121` | $73,18\%$ | $89,33 \pm 0,47\%$ | $89,17 \text{ [0,55]}\%$ | $89,52 \pm 0,45\%$ | $98,64\%$ | $11,66\times$ |
+| **B4 — PO-only** | `resnet18` | $72,71\%$ | $88,92 \pm 0,14\%$ | $89,00 \text{ [0,15]}\%$ | $89,10 \pm 0,14\%$ | $98,51\%$ | $12,81\times$ |
+| **B4 — PO-only** | `mobilenet_v3` | $72,71\%$ | $87,96 \pm 0,40\%$ | **$88,17 \text{ [0,45]}\%$** | $88,24 \pm 0,40\%$ | $98,90\%$ | $12,10\times$ |
+| **B4 — PO-only** | `densenet121` | $72,71\%$ | $89,10 \pm 0,23\%$ | $89,00 \text{ [0,27]}\%$ | $89,32 \pm 0,22\%$ | $98,38\%$ | $11,57\times$ |
+| **B2 — Stratified** | `resnet18` | $73,48\%$ | $88,83 \pm 0,24\%$ | $88,93 \text{ [0,28]}\%$ | $88,97 \pm 0,26\%$ | $98,41\%$ | $12,88\times$ |
+| **B2 — Stratified** | `mobilenet_v3` | $73,48\%$ | $87,64 \pm 0,49\%$ | $87,93 \text{ [0,55]}\%$ | $87,99 \pm 0,46\%$ | $98,55\%$ | $12,26\times$ |
+| **B2 — Stratified** | `densenet121` | $73,48\%$ | $89,34 \pm 0,68\%$ | $89,37 \text{ [0,83]}\%$ | $89,45 \pm 0,72\%$ | $98,65\%$ | $11,72\times$ |
+| **S3 — Block GA→PO**| `resnet18` | $73,74\%$ | $89,03 \pm 0,15\%$ | $89,07 \text{ [0,18]}\%$ | $89,22 \pm 0,14\%$ | $98,63\%$ | $13,26\times$ |
+| **S3 — Block GA→PO**| `mobilenet_v3` | $73,74\%$ | $87,52 \pm 0,22\%$ | $87,47 \text{ [0,27]}\%$ | $87,86 \pm 0,20\%$ | $98,42\%$ | $12,48\times$ |
+| **S3 — Block GA→PO**| `densenet121` | $73,74\%$ | $89,14 \pm 0,20\%$ | $89,17 \text{ [0,25]}\%$ | $89,37 \pm 0,14\%$ | $98,43\%$ | $11,93\times$ |
+| **S2 — Alt PO→GA** | `resnet18` | $74,81\%$ | $89,16 \pm 0,04\%$ | $89,13 \text{ [0,05]}\%$ | $89,34 \pm 0,08\%$ | $98,77\%$ | $13,82\times$ |
+| **S2 — Alt PO→GA** | `mobilenet_v3` | $74,81\%$ | $87,52 \pm 0,17\%$ | $87,43 \text{ [0,20]}\%$ | $87,88 \pm 0,13\%$ | $98,42\%$ | $12,96\times$ |
+| **S2 — Alt PO→GA** | `densenet121` | $74,81\%$ | $88,97 \pm 0,68\%$ | $89,23 \text{ [0,78]}\%$ | $89,17 \pm 0,64\%$ | $98,23\%$ | $12,35\times$ |
+| **B1 — Random** | `resnet18` | $73,48\%$ | $88,71 \pm 0,14\%$ | $88,73 \text{ [0,17]}\%$ | $88,89 \pm 0,09\%$ | $98,28\%$ | $12,42\times$ |
+| **B1 — Random** | `mobilenet_v3` | $73,48\%$ | $87,64 \pm 0,53\%$ | $87,90 \text{ [0,60]}\%$ | $87,98 \pm 0,50\%$ | $98,55\%$ | $12,18\times$ |
+| **B1 — Random** | `densenet121` | $73,48\%$ | $89,16 \pm 0,48\%$ | $89,17 \text{ [0,58]}\%$ | $89,33 \pm 0,48\%$ | $98,44\%$ | $11,64\times$ |
+| **S1 — Alt GA→PO** | `resnet18` | **$75,07\%$** | $88,71 \pm 0,31\%$ | $88,73 \text{ [0,38]}\%$ | $88,94 \pm 0,30\%$ | $98,28\%$ | **$13,86\times$** |
+| **S1 — Alt GA→PO** | `mobilenet_v3` | **$75,07\%$** | $87,31 \pm 0,39\%$ | $87,57 \text{ [0,43]}\%$ | $87,67 \pm 0,35\%$ | $98,18\%$ | **$13,07\times$** |
+| **S1 — Alt GA→PO** | `densenet121` | **$75,07\%$** | $89,03 \pm 0,07\%$ | $89,00 \text{ [0,08]}\%$ | $89,22 \pm 0,10\%$ | $98,30\%$ | **$12,48\times$** |
 
 ---
 
 ### 7.4. Phân tích Chuyên sâu Kết quả Thực nghiệm và Sự Đánh đổi Đa Mục tiêu
 
-Kết quả thực nghiệm tại Bảng 7.3 và Bảng 7.4 cung cấp bằng chứng định lượng rõ ràng về ba khía cạnh cốt lõi của bài toán rút gọn tập dữ liệu ảnh cho mạng học sâu:
+Kết quả thực nghiệm tại Bảng 7.3 và Bảng 7.4 cung cấp bằng chứng định lượng rõ ràng về bốn khía cạnh cốt lõi của bài toán rút gọn tập dữ liệu ảnh cho mạng học sâu:
 
-**Thứ nhất, hiệu quả bảo toàn độ chính xác ở chế độ rút gọn bảo toàn (`GA-only` — Rút gọn $71,24\%$ dữ liệu)**:
-Tại mức rút gọn $71,24\%$ (giữ lại trung bình $3.229 / 11.228$ ảnh huấn luyện), giải thuật `GA-only` duy trì độ bao phủ không gian đặc trưng ở mức rất cao ($\text{Cov} = 0,8926$) và độ cân bằng lớp gần như tuyệt đối ($\text{Bal} = 0,9979$). Khi huấn luyện trên tập con này, mạng `ResNet-18` đạt độ chính xác kiểm thử trung bình $89,35 \pm 0,39\%$ (riêng tại `seed = 123` đạt $89,90\%$, chỉ thấp hơn $0,37\%$ so với toàn bộ tập dữ liệu gốc, tương ứng tỷ lệ duy trì hiệu năng $\text{ARR} = 99,59\%$). Tương tự, `MobileNetV3-Small` đạt $87,79 \pm 0,24\%$ ($\text{ARR} = 98,72\%$) và `DenseNet-121` đạt $88,99 \pm 0,09\%$ ($\text{ARR} = 98,25\%$), đồng thời rút ngắn thời gian huấn luyện từ $1,36$ đến $1,57$ lần. Kết quả này chứng minh rằng hơn $71\%$ mẫu ảnh trong tập huấn luyện gốc của bộ dữ liệu Intel Image Classification mang thông tin dư thừa và có thể được loại bỏ mà chỉ làm suy giảm dưới $1,3\%$ độ chính xác phân loại.
+**Thứ nhất, sự vượt trội toàn diện của hai kiến trúc lai `S4 (Block PO→GA)` và `P1 (Parallel Merge)` về độ chính xác phân loại liên kiến trúc CNN**:
+Xét trung bình cộng trên cả 3 kiến trúc mạng học sâu (`ResNet-18`, `MobileNetV3-Small`, `DenseNet-121` qua $9$ phiên huấn luyện độc lập cho mỗi phương pháp), hai vị trí dẫn đầu toàn cục đều thuộc về các kiến trúc lai PO–GA:
+- **Hạng 1 toàn cục — `S4 (Block PO→GA)`**: Tại mức rút gọn $\text{DR} = 73,61\%$ (giữ lại trung bình $2.963,3$ ảnh), `S4` đạt độ chính xác kiểm thử trung bình liên kiến trúc cao nhất là **$88,87\%$** (Macro F1 trung bình **$89,08\%$**, tỷ lệ bảo toàn độ chính xác trung bình **$\text{ARR} = 98,84\%$**). Cụ thể, `S4` đạt $89,24 \pm 0,32\%$ trên `ResNet-18`, dẫn đầu tuyệt đối trên `MobileNetV3-Small` với **$88,02 \pm 0,34\%$** ($\text{ARR} = 98,98\%$, đạt đỉnh $88,37\%$ tại `Seed 42`) và đạt trung vị cao nhất trên `DenseNet-121` với **$89,53\%$** (đạt đỉnh $89,77\%$ tại `Seed 123`).
+- **Hạng 2 toàn cục — `P1 (Parallel Merge + Co-Refinement)`**: Tại mức rút gọn $\text{DR} = 73,22\%$ ($M = 3.007,0$ ảnh), `P1` đạt độ chính xác trung bình liên kiến trúc **$88,75\%$** ($\text{ARR} = 98,70\%$), trong đó dẫn đầu toàn bộ 10 phương pháp trên mạng **`ResNet-18`** với độ chính xác **$89,38 \pm 0,10\%$** và Macro F1 **$89,58 \pm 0,07\%$** (giữ lại **$99,02\%$** hiệu năng của toàn bộ tập dữ liệu gốc).
+Cả `S4` ($88,87\%$) và `P1` ($88,75\%$) đều vượt qua hai thuật toán thành phần đơn lẻ là `GA-only` ($88,72\%$) và `PO-only` ($88,66\%$), đồng thời bỏ xa `Stratified Random B2` ($88,60\%$) và `Random Selection B1` ($88,50\%$).
 
-**Thứ hai, hiệu năng của các cấu hình Lai ghép Tuần tự Xen kẽ (`S2 — Alt PO→GA` và `S1 — Alt GA→PO`) ở chế độ nén cực đại ($\text{DR} = 97,57\% - 97,84\%$)**:
-Trong nhóm các thuật toán có sự tham gia của PO, hai cấu hình lai ghép xen kẽ theo chu kỳ ngắn ($p = 10$ vòng lặp) là **`S2 (Alt PO→GA)`** và **`S1 (Alt GA→PO)`** cho thấy sự vượt trội rõ rệt so với cả `PO-only` lẫn các cấu hình chia khối cứng (`S3, S4`) và hợp tác nén sâu (`C1`). Cụ thể, ở mức rút gọn tới **$97,57\%$** (chỉ giữ lại trung bình **$272,7$ bức ảnh** trên tổng số $11.228$ ảnh, tức khoảng $45$ ảnh cho mỗi lớp cảnh tự nhiên — giảm quy mô dữ liệu đi $41,2$ lần), cấu hình **`S2 (Alt PO→GA)`** vẫn đạt độ chính xác trung bình **$79,81 \pm 0,67\%$** trên `MobileNetV3-Small` ($\text{ARR} = 89,75\%$) và **$79,10 \pm 2,57\%$** trên `DenseNet-121` ($\text{ARR} = 87,34\%$, đạt đỉnh **$82,63\%$** với $\text{ARR} = 91,23\%$ tại `seed = 123`). Tương tự, cấu hình **`S1 (Alt GA→PO)`** tại `seed = 123` chỉ sử dụng **$236$ bức ảnh** ($\text{DR} = 97,90\%$) nhưng đạt độ chính xác **$81,20\%$** trên `MobileNetV3-Small` ($\text{ARR} = 91,31\%$), đồng thời tăng tốc độ huấn luyện CNN từ $2,28\times$ đến $3,03\times$. Việc luân phiên liên tục từng pha $10$ vòng lặp giữa PO và GA giúp `S2` và `S1` vừa tận dụng được tốc độ hội tụ nhanh của PO, vừa sử dụng toán tử lai ghép đồng nhất của GA để ngăn quần thể suy giảm kích thước tập con xuống quá sâu như ở `C1` ($M = 204$ ảnh) hay `S3` ($M = 193$ ảnh tại `seed = 456`).
+**Thứ hai, kỷ lục bảo toàn độ chính xác đơn lẻ của kiến trúc Hợp tác Đồng tiến hóa `C1 (Coop Exchange)`**:
+Nhờ cơ chế trao đổi chéo $\text{Top-}2$ cá thể tinh hoa mỗi $5$ vòng lặp kết hợp bộ lọc khử trùng lặp khoảng cách Hamming, biến thể **`C1`** đạt độ bao phủ không gian đặc trưng cao nhất trong nhóm Hybrid ($\text{Cov} = 0,8896$) và đạt độ chính xác trung bình **$89,36 \pm 0,14\%$** trên `ResNet-18` (trung vị đạt đỉnh **$89,40\%$**). Đặc biệt, tại `Seed 42`, tập con của `C1` ($M = 2.977$ ảnh, $\text{DR} = 73,49\%$) đạt độ chính xác kiểm thử **`89,97%`** và Macro F1 **`90,12%`** trên mạng `DenseNet-121`, tương ứng tỷ lệ duy trì hiệu năng **$\text{ARR} = 99,34\%$** (chỉ thấp hơn $0,60\%$ so với huấn luyện trên $100\%$ tập dữ liệu gốc).
 
-**Thứ ba, tính tổng quát hóa xuyên kiến trúc (Cross-Architecture Generalization) và độ nhạy theo dung lượng tham số mô hình**:
-Mặc dù toàn bộ quá trình trích xuất đặc trưng và tính ma trận khoảng cách ở Tầng 1 chỉ sử dụng mạng `ResNet-18`, các tập con siêu nén ($\text{DR} \approx 97,6\% - 98,2\%$) lại đạt hiệu năng phân loại tốt nhất và ổn định nhất khi huấn luyện trên **`MobileNetV3-Small`** ($79,81 \pm 0,67\%$ với `S2`, $\text{ARR} = 89,75\%$) và **`DenseNet-121`** ($79,10 \pm 2,57\%$ với `S2`), cao hơn đáng kể so với chính `ResNet-18` ($75,49 \pm 1,80\%$). Hiện tượng này hoàn toàn nhất quán với lý thuyết học thống kê: khi số lượng mẫu huấn luyện cực nhỏ ($M \approx 200 - 270$ ảnh), kiến trúc `ResNet-18` với $11,18$ triệu tham số dễ bị quá khớp (overfitting) cục bộ trên số lượng batch ít ỏi (thể hiện rõ ở `S3` tại `seed = 456` khi $M$ giảm xuống dưới ngưỡng $200$ ảnh làm độ chính xác của `ResNet-18` giảm xuống $33,80\%$, kéo trung bình của `S3` xuống $60,04\%$ dù trung vị đạt $73,03\%$). Ngược lại, `MobileNetV3-Small` chỉ có $1,52$ triệu tham số (nhỏ hơn $7,3$ lần so với `ResNet-18`) và `DenseNet-121` có cơ chế tái sử dụng đặc trưng qua các khối kết nối dày đặc (Dense Blocks) nên duy trì được độ ổn định cao ngay cả khi huấn luyện trên chưa tới $2,5\%$ dữ liệu gốc.
+**Thứ ba, ưu thế tối ưu hóa tỷ lệ nén của nhóm Lai ghép Tuần tự Xen kẽ (`S1 — Alt GA→PO` và `S2 — Alt PO→GA`)**:
+Trong khi `S4`, `P1` và `C1` tối đa hóa độ chính xác phân loại ở mức rút gọn $\approx 73,2\% - 73,6\%$, hai cấu hình chuyển pha chu kỳ ngắn **`S1`** và **`S2`** đẩy tỷ lệ rút gọn lên mức cao nhất là **$75,07\%$ ($M = 2.799$ ảnh)** và **$74,81\%$ ($M = 2.828$ ảnh)** cùng điểm Fitness cao nhất ($0,8248$ và $0,8249$). Đáng chú ý, dù sử dụng ít hơn `GA-only` $141$ ảnh và ít hơn `PO-only` $236$ ảnh, biến thể **`S2 (Alt PO→GA)`** vẫn đạt độ chính xác **$89,16 \pm 0,04\%$** trên `ResNet-18` ($\text{ARR} = 98,77\%$), cao hơn cả `GA-only` ($89,14\%$), `PO-only` ($88,92\%$), `Stratified Random` ($88,83\%$) và `Random Selection` ($88,71\%$).
 
-**Thứ tư, phân tích đối chiếu với `Random Selection (B1)` và `Stratified Random (B2)` và kiểm định thống kê Wilcoxon**:
-Trong kịch bản thực nghiệm tự do kích thước $M$, kích thước mẫu tham chiếu của `B1` và `B2` được tính bằng trung bình cộng kích thước tập con của toàn bộ 8 phương pháp tối ưu hóa:
-$$M_{\text{baseline}} = \text{round}\left(\frac{3.229 + 243 + 273 + 214 + 227 + 222 + 204 + 224}{8}\right) = 604\text{ ảnh } (\text{DR} = 94,62\%)$$
-Do được phân bổ $M = 604$ ảnh (nhiều gấp $2,21$ đến $2,96$ lần số lượng ảnh của các cấu hình `S1–S4, P1, C1`), `B1` và `B2` đạt độ chính xác từ $84,29\%$ đến $86,28\%$, nhưng có điểm thích nghi tổng hợp thấp hơn ($0,8765$ và $0,8796$ so với $0,8862 - 0,8875$ của PO–GA). Mặt khác, so sánh trực tiếp giữa `B2 (Stratified Random)` và `B1 (Random Selection)` tại cùng kích thước $M = 604$ cho thấy việc bảo toàn phân bố lớp ($\text{Bal} = 0,9996$ so với $0,9855$) giúp cải thiện độ chính xác trên cả ba mô hình CNN (tăng $+0,91\%$ trên `ResNet-18`), khẳng định vai trò thiết yếu của thành phần $\text{Bal}(X)$ trong hàm mục tiêu. Trong kiểm định phi tham số Wilcoxon Signed-Rank Test trên $n = 3$ hạt giống (`seeds = [42, 123, 456]`), giá trị $p\text{-value}$ nhỏ nhất có thể đạt được về mặt toán học của phân phối nhị thức hai phía với cỡ mẫu $n = 3$ là $p_{\min} = \frac{2}{2^3} = 0,2500$ (đạt được tại mọi cặp so sánh có sự phân tách tuyệt đối trên cả 3 hạt giống như giữa `S1`, `S2`, `GA-only` so với `C1`).
+**Thứ tư, phân tích đối chiếu với `Random Selection (B1)`, `Stratified Random (B2)` và kiểm định thống kê Wilcoxon**:
+Để đảm bảo tính công bằng tuyệt đối khi so sánh với lấy mẫu ngẫu nhiên, kích thước tập con của `B1` và `B2` được khóa bằng đúng trung vị kích thước của các thuật toán tối ưu hóa là $M_{\text{baseline}} = 2.978$ ảnh ($\text{DR} = 73,48\%$). Tại cùng quy mô mẫu này, trên mạng `ResNet-18`, tất cả các phương pháp `P1` ($89,38\%$), `C1` ($89,36\%$), `S4` ($89,24\%$), `S2` ($89,16\%$), `GA-only` ($89,14\%$) và `S3` ($89,03\%$) đều vượt qua cả `Stratified Random B2` ($88,83\%$) lẫn `Random Selection B1` ($88,71\%$). Trong kiểm định phi tham số Wilcoxon Signed-Rank Test trên $n = 3$ hạt giống (`seeds = [42, 123, 456]`), giá trị $p\text{-value}$ nhỏ nhất có thể đạt được về mặt toán học với cỡ mẫu $n = 3$ là $p_{\min} = \frac{2}{2^3} = 0,2500$, đạt được tại mọi cặp mà `P1` và `C1` chiến thắng tuyệt đối $3/3$ hạt giống trước `B1`, `B2`, `PO-only`, `S1` và `S3` trên `ResNet-18`, cũng như khi `S4` chiến thắng tuyệt đối $3/3$ hạt giống trước `S1`, `S2`, `S3` và `C1` trên `MobileNetV3-Small`. Khi xét gộp trên toàn bộ $n = 9$ phiên huấn luyện độc lập ($3\text{ seeds} \times 3\text{ mô hình CNN}$), `S4` thắng `Random Selection (B1)` trên $8/9$ phiên chạy với mức ý nghĩa thống kê $p = 0,0195 < 0,05$.
 
 ---
 
@@ -446,17 +474,17 @@ Do được phân bổ $M = 604$ ảnh (nhiều gấp $2,21$ đến $2,96$ lần
 
 Khóa luận đã hoàn thành toàn bộ các mục tiêu nghiên cứu, thiết kế thuật toán và kiểm chứng thực nghiệm theo đề cương **CNTT-KLCN140**, đạt được bốn kết quả cụ thể:
 1. **Xác lập quy trình thực nghiệm chống rò rỉ dữ liệu và mốc chuẩn B0 trên 3 kiến trúc CNN**: Đã phân hoạch chuẩn hóa bộ dữ liệu Intel Image Classification ($17.034$ ảnh, $6$ lớp cảnh tự nhiên) thành ba tập độc lập ($11.228$ Train / $2.806$ Validation / $3.000$ Independent Test) và thiết lập mốc chuẩn toàn tập dữ liệu trên ba kiến trúc học sâu `ResNet-18` ($90,27\%$), `MobileNetV3-Small` ($88,93\%$) và `DenseNet-121` ($90,57\%$).
-2. **Ứng dụng thuật toán Parrot Optimizer (PO) truyền thống và Hàm mục tiêu 4 thành phần chuẩn hóa nội tại**: Đã giữ nguyên bốn hành vi bầy đàn của thuật toán Parrot Optimizer truyền thống (Lian và cộng sự, 2024) kết hợp bước ánh xạ nhị phân $|\tanh(\Delta x)|$ ở đầu ra trên không gian $N = 11.228$ chiều và tiền tính toán ma trận khoảng cách Cosine chuẩn hóa trên GPU, giúp tăng tốc quá trình tối ưu hóa gấp hơn $3$ lần so với giải thuật di truyền truyền thống.
-3. **Chứng minh hiệu quả của các kiến trúc lai hóa PO–GA**: Thực nghiệm đối sánh toàn diện $10$ phương pháp chỉ ra rằng:
-   * Ở vùng rút gọn bảo toàn ($\text{DR} = 71,24\%$, giữ lại $3.229$ ảnh), thuật toán `GA-only` giữ lại tới **$98,99\%$** độ chính xác gốc trên `ResNet-18` ($89,35 \pm 0,39\%$), **$98,72\%$** trên `MobileNetV3-Small` ($87,79 \pm 0,24\%$) và **$98,25\%$** trên `DenseNet-121` ($88,99 \pm 0,09\%$).
-   * Ở vùng nén cực đại ($\text{DR} = 97,57\% - 98,18\%$, chỉ giữ lại $204 - 273$ ảnh), các cấu hình lai ghép PO–GA đạt điểm thích nghi cao nhất ($0,8862 - 0,8875$). Đặc biệt, hai cấu hình lai tuần tự xen kẽ **`S2 (Alt PO→GA)`** và **`S1 (Alt GA→PO)`** chỉ sử dụng **$2,16\% - 2,43\%$** lượng dữ liệu gốc nhưng vẫn bảo toàn tới **$89,75\%$** hiệu năng gốc trên `MobileNetV3-Small` ($79,81 \pm 0,67\%$, đạt đỉnh $81,20\%$) và đạt tới **$82,63\%$** ($\text{ARR} = 91,23\%$) trên `DenseNet-121`, đồng thời tăng tốc huấn luyện từ **$2,38\times$ đến $3,03\times$**.
+2. **Thiết kế hàm mục tiêu 4 thành phần chuẩn hóa nội tại và hiệu chỉnh cân bằng cho bài toán chọn tập con nhị phân**: Đã xây dựng hàm thích nghi kết hợp Độ đa dạng ($\alpha = 0,15$), Độ bao phủ ($\beta = 0,45$), Độ cân bằng lớp ($\gamma = 0,20$) và Độ nén ($\delta = 0,20$) trên ma trận khoảng cách Cosine tiền tính toán bằng GPU, kết hợp toán tử đột biến thích nghi cân bằng mật độ trong GA và bốn hành vi bầy đàn truyền thống của Parrot Optimizer (Lian và cộng sự, 2024) với vector đồng thuận tâm hóa và hàm truyền hình chữ V $|\tanh(\Delta x)|$, giúp mỗi phiên tối ưu hóa $2.000\text{ FEs}$ hoàn tất chỉ trong $9,26 - 10,58\text{ giây}$.
+3. **Chứng minh tính ưu việt của sáu biến thể lai hóa Hybrid PO–GA trên cả hai tầng đánh giá**:
+   * **Về chất lượng tối ưu hóa và tỷ lệ nén (Tầng 1)**: Hai cấu hình lai tuần tự xen kẽ **`S2 (Alt PO→GA)`** và **`S1 (Alt GA→PO)`** đạt điểm Fitness cao nhất toàn cục ($0,8249$ và $0,8248$) và cắt giảm tới **$74,81\% - 75,07\%$** tập dữ liệu gốc, vượt qua cả `GA-only`, `PO-only`, `Random Selection` và `Stratified Random`.
+   * **Về hiệu năng huấn luyện mạng học sâu hạ nguồn (Tầng 2)**: Cấu hình lai chia khối **`S4 (Block PO→GA)`** xếp hạng #1 toàn cục với độ chính xác trung bình liên kiến trúc đạt **$88,87\%$** ($\text{ARR} = 98,84\%$ tại mức rút gọn $73,61\%$, dẫn đầu trên `MobileNetV3-Small` với $88,02\%$). Cấu hình lai song song hợp nhất **`P1 (Parallel Merge)`** xếp hạng #2 toàn cục ($88,75\%$) và dẫn đầu trên `ResNet-18` với **$89,38 \pm 0,10\%$** ($\text{ARR} = 99,02\%$), trong khi cấu hình hợp tác **`C1 (Coop Exchange)`** đạt đỉnh đơn lẻ **$89,97\%$** ($\text{ARR} = 99,34\%$) trên `DenseNet-121`.
 4. **Đóng gói công cụ thực nghiệm hoàn chỉnh**: Đã xây dựng hệ thống mã nguồn mô-đun hóa kèm bộ đặc trưng tiền trích xuất (`features/train_features_train80.npy`) và kịch bản tự động hóa thực nghiệm trên cả máy cục bộ lẫn nền tảng đám mây Kaggle.
 
 ### 8.2. Hướng Phát triển Tiếp theo
 
 Từ những phát hiện thực nghiệm trong khóa luận, ba hướng nghiên cứu mở rộng giàu tiềm năng được đề xuất cho các công trình tiếp theo:
-1. **Cân bằng động trọng số độ nén ($\delta$) hoặc áp dụng Tối ưu hóa Đa mục tiêu Pareto**: Thay vì cố định trọng số $\delta = 0,40$ khiến toán tử giao tiếp ($S_t = 3$) của PO đẩy tỷ lệ nén lên sát ngưỡng $98\%$, việc giảm $\delta$ xuống vùng $[0,15; 0,25]$ hoặc áp dụng cơ chế trội Pareto sẽ cho phép thuật toán PO–GA trải đều các nghiệm trên toàn bộ dải rút gọn từ $50\%$ đến $95\%$.
-2. **Mở rộng quy mô hạt giống thống kê ($n \ge 10$ seeds) và tăng số chu kỳ tinh chỉnh cho tập con siêu nhỏ**: Khi kích thước tập con $M < 300$ ảnh, số lượng bước cập nhật trọng số (gradient steps) trong $5$ epochs giảm đi $40$ lần so với tập gốc; việc điều chỉnh lịch trình tốc độ học (Cosine Annealing Learning Rate) theo kích thước tập con sẽ giúp `ResNet-18` tránh hiện tượng suy giảm độ chính xác ở chế độ nén trên $98\%$.
+1. **Mở rộng sang bài toán Tối ưu hóa Đa mục tiêu Pareto (Multi-Objective Pareto PO–GA)**: Thay vì sử dụng một bộ trọng số cố định $(\alpha, \beta, \gamma, \delta)$, việc tích hợp cơ chế xếp hạng không bị trội (Non-dominated Sorting) sẽ cho phép thuật toán PO–GA xuất ra đồng thời toàn bộ mặt biên Pareto trải dài từ mức rút gọn $50\%$ đến $90\%$ trong một lần chạy duy nhất.
+2. **Mở rộng quy mô hạt giống thống kê ($n \ge 10$ seeds) và đánh giá trên các bộ dữ liệu quy mô lớn hơn (CIFAR-100, Tiny-ImageNet)**: Tăng số lượng hạt giống độc lập để nâng cao lực thống kê của kiểm định phi tham số Wilcoxon theo từng mô hình đơn lẻ và kiểm chứng khả năng mở rộng của thuật toán khi số lượng lớp tăng lên $100 - 200$ lớp.
 3. **Tích hợp tiêu chí độ khó của mẫu học sâu (Gradient Norm / Forgetting Score)**: Kết hợp khoảng cách hình học Cosine trên không gian đặc trưng với độ lớn đạo hàm của hàm mất mát trong những epoch đầu tiên để ưu tiên giữ lại các mẫu nằm sát biên quyết định giữa hai lớp dễ nhầm lẫn là `glacier` và `mountain`.
 
 ---
