@@ -1,0 +1,8 @@
+class_name,resnet18,mobilenet_v3,densenet121
+buildings,91.22,91.83,90.0
+forest,98.95,98.94,98.63
+glacier,84.77,80.74,82.7
+mountain,85.37,82.23,84.15
+sea,95.59,90.59,94.35
+street,92.31,93.07,91.56
+macro_avg,91.37,89.57,90.23
