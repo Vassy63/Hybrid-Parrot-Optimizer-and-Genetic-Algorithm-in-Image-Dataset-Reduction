@@ -1,4 +1,4 @@
-"""Adapter around the supplied engine; this module imports torch only in a worker."""
+﻿"""Adapter around the supplied engine; this module imports torch only in a worker."""
 import copy
 import csv
 import hashlib
@@ -11,7 +11,7 @@ import time
 from .constraints import enforce_keep_floor
 from .jobs import write_json
 from .results import paired_comparison
-from .settings import minimum_retained, PROJECT_ROOT
+from .settings import minimum_retained, PROJECT_ROOT, POGA_ROOT
 
 
 def run_demo(cfg, folder, emit):
@@ -63,7 +63,8 @@ def run_demo(cfg, folder, emit):
         hasher.update(json.dumps([record['path'], label, stat.st_size, stat.st_mtime_ns]).encode())
     import torchvision
     hasher.update(json.dumps([42, base.image_size, 'resnet18-imagenet-default', torchvision.__version__]).encode())
-    cache = PROJECT_ROOT / 'cache' / 'features' / hasher.hexdigest()[:24]
+    # Cache dac trung luu trong POGA_ROOT/cache/ (rieng biet voi thu muc goc repo).
+    cache = POGA_ROOT / 'cache' / 'features' / hasher.hexdigest()[:24]
     cache.mkdir(parents=True, exist_ok=True)
     # A fingerprint names the exact ordered train files and extractor configuration.
     emit('features', 'Đang nạp hoặc trích xuất đặc trưng ResNet-18',
@@ -79,6 +80,9 @@ def run_demo(cfg, folder, emit):
     rng = np.random.RandomState(cfg.seed)
     def repair(mask):
         return enforce_keep_floor(mask, labels, floor, rng)
+    # Phan duoi day thuc hien monkey patch tren cac module da import trong process nay.
+    # Viec ghi de ham chi anh huong den process worker nay (chay qua subprocess.Popen),
+    # khong anh huong sang Streamlit process chinh hoac bat ky lan chay CLI thuc nghiem nao khac.
     ga_module.repair_solution = repair
     po_module.repair_solution = repair
     poga = POGAConfig()
