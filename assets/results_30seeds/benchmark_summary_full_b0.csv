@@ -1,0 +1,4 @@
+model,params_million,test_accuracy_percent,val_accuracy_percent,macro_f1_percent,train_accuracy_percent,latency_ms_per_image,training_time_seconds
+resnet18,11.18,91.2,91.27,91.37,91.96,1.03,1138.14
+mobilenet_v3,1.52,89.23,90.41,89.57,91.41,0.31,858.85
+densenet121,6.96,90.03,91.98,90.23,92.37,3.05,1712.85

@@ -9,7 +9,7 @@ import threading
 import time
 import uuid
 
-from .settings import PROJECT_ROOT
+from .settings import PROJECT_ROOT, POGA_ROOT
 
 TERMINAL = {'succeeded', 'failed', 'cancelled', 'time_limit'}
 
@@ -79,7 +79,7 @@ def read_events(folder, limit=500):
 
 class JobManager:
     def __init__(self, output_root=None):
-        self.output_root = Path(output_root or PROJECT_ROOT / 'outputs')
+        self.output_root = Path(output_root or POGA_ROOT / 'outputs')
         self.output_root.mkdir(parents=True, exist_ok=True)
         self._lock = threading.RLock()
         self._process = None
@@ -103,10 +103,10 @@ class JobManager:
             write_json(folder / 'status.json', {'state': 'starting', 'message': 'Đang khởi động', 'elapsed': 0, 'started_at': time.time()})
             command = [sys.executable, '-u', '-B', '-m', 'poga_demo.worker', '--job', str(folder)]
             env = dict(os.environ)
-            env['PYTHONPATH'] = str(PROJECT_ROOT / 'src') + os.pathsep + env.get('PYTHONPATH', '')
+            env['PYTHONPATH'] = str(POGA_ROOT / 'src') + os.pathsep + str(PROJECT_ROOT) + os.pathsep + env.get('PYTHONPATH', '')
             env.update(PYTHONDONTWRITEBYTECODE='1', PYTHONUTF8='1', OMP_NUM_THREADS='1', MKL_NUM_THREADS='1')
-            env['TORCH_HOME'] = str(PROJECT_ROOT / 'cache' / 'torch')
-            env['MPLCONFIGDIR'] = str(PROJECT_ROOT / 'cache' / 'matplotlib')
+            env['TORCH_HOME'] = str(POGA_ROOT / 'cache' / 'torch')
+            env['MPLCONFIGDIR'] = str(POGA_ROOT / 'cache' / 'matplotlib')
             try:
                 with (folder / 'console.log').open('w', encoding='utf-8') as log:
                     self._process = subprocess.Popen(command, cwd=PROJECT_ROOT, env=env, stdout=log,

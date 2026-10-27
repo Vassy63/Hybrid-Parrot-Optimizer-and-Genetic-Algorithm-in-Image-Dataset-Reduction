@@ -35,8 +35,8 @@ class DemoSettings:
     # source_dir tro vao bo loi PO-GA dung chung (PROJECT_ROOT).
     # train_dir / test_dir la duong dan den dataset anh Intel Image.
     source_dir: str = str(PROJECT_ROOT)
-    train_dir: str = str(PROJECT_ROOT / 'datasets' / 'intel' / 'seg_train' / 'seg_train')
-    test_dir: str = str(PROJECT_ROOT / 'datasets' / 'intel' / 'seg_test' / 'seg_test')
+    train_dir: str = str((POGA_ROOT / 'datasets' / 'intel' / 'seg_train' / 'seg_train') if (POGA_ROOT / 'datasets' / 'intel').exists() else (PROJECT_ROOT / 'datasets' / 'intel' / 'seg_train' / 'seg_train'))
+    test_dir: str = str((POGA_ROOT / 'datasets' / 'intel' / 'seg_test' / 'seg_test') if (POGA_ROOT / 'datasets' / 'intel').exists() else (PROJECT_ROOT / 'datasets' / 'intel' / 'seg_test' / 'seg_test'))
     method: str = 's1'
     model: str = 'resnet18'
     num_samples: int = 600

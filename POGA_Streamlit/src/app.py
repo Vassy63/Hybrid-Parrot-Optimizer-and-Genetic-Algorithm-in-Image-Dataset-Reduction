@@ -10,13 +10,14 @@ import pandas as pd
 import streamlit as st
 
 from poga_demo.jobs import JobManager, TERMINAL, read_events, read_json
-from poga_demo.settings import DemoSettings, METHODS, MODELS, PROJECT_ROOT
+from poga_demo.settings import DemoSettings, METHODS, MODELS, PROJECT_ROOT, POGA_ROOT
 from poga_demo.results import read_results, summarize
 from poga_demo.charts import class_distribution_chart, comparison_chart
 
 st.set_page_config(page_title='Demo PO-GA', page_icon=':material/analytics:', layout='wide')
-st.markdown('<style>' + (PROJECT_ROOT / 'assets/demo.css').read_text(encoding='utf-8') + '</style>',
-            unsafe_allow_html=True)
+css_path = POGA_ROOT / 'assets/demo.css' if (POGA_ROOT / 'assets/demo.css').is_file() else PROJECT_ROOT / 'assets/demo.css'
+if css_path.is_file():
+    st.markdown('<style>' + css_path.read_text(encoding='utf-8') + '</style>', unsafe_allow_html=True)
 
 
 @st.cache_resource
@@ -166,7 +167,9 @@ def run_panel():
 def result_archive():
     st.subheader('Kết quả thực nghiệm 30 seeds')
     st.caption('Các số liệu đã huấn luyện trước được tách khỏi lượt demo vừa chạy.')
-    default = PROJECT_ROOT/'assets/results_30seeds/experiment_results_30seeds.csv'
+    default = POGA_ROOT / 'assets/results_30seeds/experiment_results_30seeds.csv'
+    if not default.is_file():
+        default = PROJECT_ROOT / 'assets/results_30seeds/experiment_results_30seeds.csv'
     try:
         rows = read_results(default)
         agg = pd.DataFrame(summarize(rows))
