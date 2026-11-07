@@ -1,0 +1,14 @@
+# Core dependencies for PO-GA algorithm & CNN training
+torch>=2.0.0
+torchvision>=0.15.0
+numpy>=1.24.0
+scipy>=1.10.0
+matplotlib>=3.7.0
+pandas>=2.0.0
+tqdm>=4.65.0
+pillow>=9.5.0
+
+# Dependencies for Streamlit Interactive Demo (POGA_Streamlit/)
+streamlit>=1.30.0
+altair>=5.0.0
+

@@ -1,4 +1,4 @@
-﻿# PO-GA: Parrot Optimizer ket hop Genetic Algorithm cho Rut gon Tap du lieu Anh
+# PO-GA: Parrot Optimizer ket hop Genetic Algorithm cho Rut gon Tap du lieu Anh
 
 **De tai Khoa luan Tot nghiep** - Ung dung thuat toan Parrot Optimizer ket hop Genetic Algorithm
 trong rut gon tap du lieu anh cho bai toan phan loai canh tu nhien.
@@ -37,15 +37,20 @@ trong rut gon tap du lieu anh cho bai toan phan loai canh tu nhien.
     |   +-- start_demo.bat        # Khoi chay Streamlit tren Windows
     +-- run_poga.py               # Entry point CLI thuc nghiem
     +-- train.py                  # Huan luyen don le
-    +-- kaggle_poga_notebook.ipynb # Notebook chay toan bo 30 seed tren Kaggle
-    +-- README.md                 # File nay
-    +-- NGUON_MA_VA_LICH_SU.md    # Nguon ma va lich su tich hop
-    +-- GIAI_THICH_TY_LE_GIU_LAI.md # Giai thich target_ratio va muc rut gon
+    +-- requirements.txt          # Danh sach thu vien can thiet
+    +-- README.md                 # File huong dan nay
+    +-- ARCHITECTURE.md           # Kien truc he thong va pipeline chi tiet
 
-## 3. Yeu cau he thong
+## 3. Yeu cau he thong & Cai dat
 
 - Python 3.10+ (khuyen nghi 3.11)
-- CUDA GPU (khuyen nghi cho thuc nghiem; CPU dc ho tro nhung cham hon nhieu)
+- CUDA GPU (khuyen nghi cho thuc nghiem; CPU dc ho tro nhung cham hon)
+- Cai dat thu vien moi truong:
+
+```bash
+pip install -r requirements.txt
+```
+
 - Dataset: Intel Image Classification (Kaggle) -- khong luu trong Git
 
 ## 4. Chuan bi du lieu

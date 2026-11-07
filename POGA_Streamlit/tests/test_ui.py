@@ -21,8 +21,8 @@ class StreamlitTests(unittest.TestCase):
 
     def test_simplified_sidebar_uses_fixed_defaults_when_starting_a_job(self):
         from streamlit.testing.v1 import AppTest
-        from poga_demo.settings import PROJECT_ROOT
-        app = AppTest.from_file(str(PROJECT_ROOT / 'src/app.py')).run(timeout=30)
+        from poga_demo.settings import PROJECT_ROOT, POGA_ROOT
+        app = AppTest.from_file(str(POGA_ROOT / 'src/app.py')).run(timeout=30)
         self.assertFalse(app.exception)
         self.assertEqual(len(app.sidebar.text_input), 0)
         self.assertEqual(len(app.sidebar.select_slider), 0)
@@ -41,8 +41,8 @@ class StreamlitTests(unittest.TestCase):
     def test_archive_model_filter_updates_all_comparison_charts(self):
         from streamlit.testing.v1 import AppTest
         from streamlit.dataframe_util import convert_arrow_bytes_to_pandas_df
-        from poga_demo.settings import PROJECT_ROOT
-        app = AppTest.from_file(str(PROJECT_ROOT / 'src/app.py')).run(timeout=30)
+        from poga_demo.settings import POGA_ROOT
+        app = AppTest.from_file(str(POGA_ROOT / 'src/app.py')).run(timeout=30)
         self.assertFalse(app.exception)
         for model in ['resnet18', 'mobilenet_v3', 'densenet121']:
             app.selectbox(key='archive_model').set_value(model).run()
